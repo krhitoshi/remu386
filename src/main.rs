@@ -59,6 +59,7 @@ fn main() {
             break;
         }
     }
+    dump_register(&emu);
 }
 
 fn code8(emu: &Emulator, index: usize) -> u32 {
@@ -89,5 +90,17 @@ fn code32(emu: &Emulator, index: usize) -> u32 {
     println!("data: {}", data);
 
     return value;
+}
+
+fn dump_register(emu: &Emulator) {
+    let mut count = 0;
+    loop {
+        if count == emu.register.len() {
+            break;
+        }
+        let reg_name = REGISTER_NAME[count];
+        println!("{} = {:#010X}", reg_name, emu.register[count]);
+        count += 1;
+    }
 }
 
