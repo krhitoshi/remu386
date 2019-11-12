@@ -36,6 +36,10 @@ fn main() {
             println!("ret");
             println!("break");
             break;
+        } else {
+            println!("unknown code");
+            println!("break");
+            break;
         }
     }
 }
