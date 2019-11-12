@@ -3,7 +3,17 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
+struct Emulator {
+    memory: Vec<u8>,
+    epi: usize,
+}
+
 fn main() {
+    let emu = Emulator {
+        memory: Vec::new(),
+        epi: 0
+    };
+
     let path = Path::new("test1");
     let mut f = match File::open(&path) {
         Err(why) => panic!("couldn't open {}: {}", path.display(), why.description()),
