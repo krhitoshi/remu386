@@ -15,8 +15,9 @@ fn main() {
     let mut buffer = Vec::new();
     f.read_to_end(&mut buffer);
 
-    println!("opcode: {:2X}", buffer[eip]);
-    if buffer[eip] == 0xb8 {
+    let code = code8(&buffer, eip);
+    println!("opcode: {:2X}", code);
+    if code == 0xb8 {
         println!("mov eax,?");
     }
 
@@ -68,4 +69,8 @@ fn main() {
     // for byte in f.bytes() {
     //     println!("{:#04x}", byte.unwrap());
     // }
+}
+
+fn code8(buffer: &Vec<u8>, index: usize) -> u32 {
+    return buffer[index].into();
 }
