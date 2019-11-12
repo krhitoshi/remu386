@@ -8,8 +8,11 @@ enum Register {
     ESP = 4, EBP = 5, ESI = 6, EDI = 7
 }
 
+// 1MB 0x00000 - 0xfffff
+const MEMORY_SIZE: u32 = 1024 * 1024;
+
 struct Emulator {
-    memory: Vec<u8>,
+    memory: [u8; MEMORY_SIZE as usize],
     eip: usize,
     register: [u32; 8]
 }
@@ -19,7 +22,7 @@ static REGISTER_NAME: [&str; 8] =
 
 fn main() {
     let mut emu = Emulator {
-        memory: Vec::new(),
+        memory: [0; MEMORY_SIZE as usize],
         eip: 0,
         register: [0; 8]
     };
@@ -30,7 +33,7 @@ fn main() {
         Ok(f) => f,
     };
 
-    f.read_to_end(&mut emu.memory);
+    f.read(&mut emu.memory);
 
     loop {
         let code = code8(&mut emu, 0);
