@@ -55,6 +55,14 @@ fn main() {
     println!("bin: {:032b}", buffer[eip]);
     println!("bin: {:032b}", temp << 25);
     println!("value: {}", value);
+
+    println!("value: {:032b}", value);
+    eip += 1;
+
+    println!("opcode: {:2X}", buffer[eip]);
+    if buffer[eip] == 0xc3 {
+        println!("ret");
+    }
     eip += 1;
 
     // for byte in f.bytes() {
