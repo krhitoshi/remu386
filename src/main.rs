@@ -36,7 +36,7 @@ fn main() {
     f.read(&mut emu.memory);
 
     loop {
-        let code = code8(&mut emu, 0);
+        let code = code8(&emu, 0);
         emu.eip += 1;
         println!("opcode: {:2X}", code);
 
@@ -45,7 +45,7 @@ fn main() {
             let reg_name = REGISTER_NAME[reg];
             println!("reg: {}", REGISTER_NAME[reg]);
             println!("mov {},?", reg_name);
-            let value = code32(&mut emu, 0);
+            let value = code32(&emu, 0);
             println!("mov {},{:#X}",reg_name,  value);
             emu.register[reg] = value;
             emu.eip += 4;
