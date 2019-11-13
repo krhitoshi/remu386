@@ -40,7 +40,7 @@ impl Emulator {
         file.read(&mut self.memory);
     }
 
-    fn esp(&mut self) -> u32 {
+    fn esp(&self) -> u32 {
         return self.register[Register::ESP as usize];
     }
 
@@ -77,7 +77,7 @@ impl Emulator {
         }
     }
 
-    fn mem_get32(&mut self, address: u32) -> u32 {
+    fn mem_get32(&self, address: u32) -> u32 {
         println!("address: {:08X}", address);
         let mut value: u32 = 0;
 
@@ -114,7 +114,7 @@ impl Emulator {
         return value;
     }
 
-    fn read_modrm(&mut self, code: u32) -> ModRM {
+    fn read_modrm(&self, code: u32) -> ModRM {
         println!("ModR/M: {:X} {:#8b}", code, code);
 
         let mut modrm = ModRM {
@@ -148,15 +148,13 @@ impl Emulator {
                 println!("reg: {}", reg_name);
                 println!("push {},?", reg_name);
                 self.esp_sub4();
-                let esp = self.esp();
-                self.mem_set32(esp, self.register[reg as usize]);
+                self.mem_set32(self.esp(), self.register[reg as usize]);
             } else if (0x58 <= code) && (code <= (0x58 + 7)) {
                 let reg = code - 0x58;
                 let reg_name = self.register_name(reg);
                 println!("reg: {}", reg_name);
                 println!("pop {},?", reg_name);
-                let esp = self.esp();
-                self.register[reg as usize] = self.mem_get32(esp);
+                self.register[reg as usize] = self.mem_get32(self.esp());
                 self.esp_add4();
             } else if (0xb8 <= code) && (code <= (0xb8 + 7)) {
                 let reg = code - 0xb8;
@@ -196,7 +194,7 @@ impl Emulator {
         }
     }
 
-    pub fn dump_memory(&mut self) {
+    pub fn dump_memory(&self) {
         for i in 1..10 {
             let index = (MEMORY_SIZE - 4 * i) as usize;
             let mut data: String = String::new();
@@ -208,7 +206,7 @@ impl Emulator {
         }
     }
 
-    pub fn dump_register(&mut self) {
+    pub fn dump_register(&self) {
         for i in 0..self.register.len() {
             let reg_name = self.register_name(i as u32);
             println!("{} = {:#010X}", reg_name, self.register[i]);
