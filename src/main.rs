@@ -1,3 +1,4 @@
+use std::env;
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
@@ -20,9 +21,14 @@ static REGISTER_NAME: [&str; 8] =
  ["EAX", "ECX", "EDX", "EBX", "ESP", "EBP", "ESI", "EDI"];
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
+    if args.len() != 2 {
+        panic!("Usage: {} FILE", args[0])
+    }
+
     let mut emu = emulator::Emulator::new();
 
-    let path = Path::new("test2");
+    let path = Path::new(&args[1]);
     let mut f = match File::open(&path) {
         Err(why) => panic!("couldn't open {}: {}", path.display(), why.description()),
         Ok(f) => f,
