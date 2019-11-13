@@ -56,33 +56,17 @@ impl Emulator {
         self.eip += 1;
     }
 
-    fn mem_set32(&mut self, index: u32, value: u32) {
-        println!("index: {:08X}", index);
+    fn mem_set32(&mut self, address: u32, value: u32) {
+        println!("address: {:08X}", address);
         println!("value: {:08X}", value);
 
-        let mask1 = 0xff000000;
-        let temp1 = (value & mask1) >> 8*3;
-        let offset1 = (index + 3) as usize;
-        self.memory[offset1] = temp1 as u8;
-        println!("hex: {:02X}", temp1);
-
-        let mask2 = 0x00ff0000;
-        let temp2 = (value & mask2) >> 8*2;
-        let offset2 = (index + 2) as usize;
-        self.memory[offset2] = temp2 as u8;
-        println!("hex: {:02X}", temp2);
-
-        let mask3 = 0x0000ff00;
-        let temp3 = (value & mask3) >> 8*1;
-        let offset3 = (index + 1) as usize;
-        self.memory[offset3] = temp3 as u8;
-        println!("hex: {:02X}", temp3);
-
-        let mask4 = 0x000000ff;
-        let temp4 = (value & mask4) >> 8*0;
-        println!("hex: {:02X}", temp4);
-        let offset4 = (index + 0) as usize;
-        self.memory[offset4] = temp4 as u8;
+        for i in 0..4 {
+            let mask = 0xff << 8*i;
+            let temp = (value & mask) >> 8*i;
+            let offset = (address + i) as usize;
+            self.memory[offset] = temp as u8;
+            println!("hex: {:02X}", temp);
+        }
     }
 
     fn code8(&mut self, index: usize) -> u32 {
