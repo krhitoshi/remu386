@@ -20,11 +20,7 @@ static REGISTER_NAME: [&str; 8] =
  ["EAX", "ECX", "EDX", "EBX", "ESP", "EBP", "ESI", "EDI"];
 
 fn main() {
-    let mut emu = emulator::Emulator {
-        memory: [0; emulator::MEMORY_SIZE as usize],
-        eip: 0,
-        register: [0; 8]
-    };
+    let mut emu = emulator::Emulator::new();
 
     let path = Path::new("test2");
     let mut f = match File::open(&path) {

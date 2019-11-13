@@ -6,3 +6,13 @@ pub struct Emulator {
     pub eip: usize,
     pub register: [u32; 8]
 }
+
+impl Emulator {
+    pub fn new() -> Emulator {
+        return Emulator {
+            memory: [0; MEMORY_SIZE as usize],
+            eip: 0,
+            register: [0; 8]
+        };
+    }
+}
