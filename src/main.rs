@@ -3,18 +3,11 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
+mod emulator;
+
 enum Register {
     EAX = 0, ECX = 1, EDX = 2, EBX =3,
     ESP = 4, EBP = 5, ESI = 6, EDI = 7
-}
-
-// 1MB 0x00000 - 0xfffff
-const MEMORY_SIZE: u32 = 1024 * 1024;
-
-struct Emulator {
-    memory: [u8; MEMORY_SIZE as usize],
-    eip: usize,
-    register: [u32; 8]
 }
 
 struct ModRM {
@@ -27,8 +20,8 @@ static REGISTER_NAME: [&str; 8] =
  ["EAX", "ECX", "EDX", "EBX", "ESP", "EBP", "ESI", "EDI"];
 
 fn main() {
-    let mut emu = Emulator {
-        memory: [0; MEMORY_SIZE as usize],
+    let mut emu = emulator::Emulator {
+        memory: [0; emulator::MEMORY_SIZE as usize],
         eip: 0,
         register: [0; 8]
     };
@@ -85,11 +78,11 @@ fn main() {
     dump_register(&emu);
 }
 
-fn code8(emu: &Emulator, index: usize) -> u32 {
+fn code8(emu: &emulator::Emulator, index: usize) -> u32 {
     return emu.memory[emu.eip + index].into();
 }
 
-fn code32(emu: &Emulator, index: usize) -> u32 {
+fn code32(emu: &emulator::Emulator, index: usize) -> u32 {
     let mut value: u32 = 0;
     let mut data: String = String::new();
 
@@ -139,7 +132,7 @@ fn read_modrm(code: u32) -> ModRM {
     return modrm;
 }
 
-fn dump_register(emu: &Emulator) {
+fn dump_register(emu: &emulator::Emulator) {
     let mut count = 0;
     loop {
         if count == emu.register.len() {
