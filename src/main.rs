@@ -22,4 +22,5 @@ fn main() {
     emu.load_memory(&mut f);
     emu.launch();
     emu.dump_register();
+    emu.dump_memory();
 }
