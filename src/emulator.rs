@@ -15,4 +15,8 @@ impl Emulator {
             register: [0; 8]
         };
     }
+
+    pub fn epi_add(offset: usize) {
+        eip += offset;
+    }
 }
