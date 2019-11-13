@@ -27,7 +27,7 @@ fn main() {
         register: [0; 8]
     };
 
-    let path = Path::new("test1");
+    let path = Path::new("test2");
     let mut f = match File::open(&path) {
         Err(why) => panic!("couldn't open {}: {}", path.display(), why.description()),
         Ok(f) => f,
@@ -49,6 +49,31 @@ fn main() {
             println!("mov {},{:#X}",reg_name,  value);
             emu.register[reg] = value;
             emu.eip += 4;
+        } else if code == 0x89 {
+            let mod_rm = code8(&emu, 0);
+            emu.eip += 1;
+            println!("{:#8b}",mod_rm);
+            let mod_mask = 0b11000000;
+            let _mod = (mod_rm & mod_mask) >> 6;
+            println!("Mod: {:#04b}", _mod);
+            let reg_mask = 0b00111000;
+            let reg = ((mod_rm & reg_mask) >> 3) as usize;
+            println!("REG: {:#05b}", reg);
+            let rm_mask = 0b00000111;
+            let rm = (mod_rm & rm_mask) as usize;
+            println!("R/M: {:#05b}", rm);
+
+            let reg_name1 = REGISTER_NAME[reg];
+
+            if _mod == 0b11 {
+                let reg_name2 = REGISTER_NAME[rm];
+                println!("mov {},{}", reg_name2, reg_name1);
+                emu.register[rm] = emu.register[reg];
+            } else {
+                println!("unknown Mod");
+                println!("break");
+                break;
+            }
         } else if code == 0xc3 {
             println!("ret");
             println!("break");
