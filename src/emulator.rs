@@ -4,10 +4,10 @@ use std::io::Read;
 // 1MB 0x00000 - 0xfffff
 pub const MEMORY_SIZE: u32 = 1024 * 1024;
 
-// enum Register {
-//     EAX = 0, ECX = 1, EDX = 2, EBX =3,
-//     ESP = 4, EBP = 5, ESI = 6, EDI = 7
-// }
+enum Register {
+    EAX = 0, ECX = 1, EDX = 2, EBX = 3,
+    ESP = 4, EBP = 5, ESI = 6, EDI = 7
+}
 
 pub struct Emulator {
     memory: [u8; MEMORY_SIZE as usize],
@@ -26,11 +26,14 @@ static REGISTER_NAME: [&str; 8] =
 
 impl Emulator {
     pub fn new() -> Emulator {
-        return Emulator {
+        let mut emu = Emulator {
             memory: [0; MEMORY_SIZE as usize],
             eip: 0,
             register: [0; 8]
         };
+        emu.register[Register::ESP as usize] = MEMORY_SIZE - 1;
+
+        return emu;
     }
 
     pub fn load_memory(&mut self, mut file: &File) {
