@@ -32,7 +32,7 @@ fn main() {
 
     loop {
         let code = code8(&emu, 0);
-        emu.eip += 1;
+        emu.epi_inc();
         println!("opcode: {:2X}", code);
 
         if (0xb8 <= code) && (code <= (0xb8 + 7)) {
@@ -43,10 +43,10 @@ fn main() {
             let value = code32(&emu, 0);
             println!("mov {},{:#X}",reg_name,  value);
             emu.register[reg] = value;
-            emu.eip += 4;
+            emu.epi_add4();
         } else if code == 0x89 {
             let modrm_code = code8(&emu, 0);
-            emu.eip += 1;
+            emu.epi_inc();
 
             let modrm = read_modrm(modrm_code);
 

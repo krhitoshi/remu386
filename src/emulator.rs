@@ -16,7 +16,11 @@ impl Emulator {
         };
     }
 
-    pub fn epi_add(offset: usize) {
-        eip += offset;
+    pub fn epi_add4(&mut self) {
+        self.eip += 4;
+    }
+
+    pub fn epi_inc(&mut self) {
+        self.eip += 1;
     }
 }
