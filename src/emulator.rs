@@ -60,7 +60,7 @@ impl Emulator {
         self.eip += 1;
     }
 
-    fn register_name(&mut self, index: u32) -> &str {
+    fn register_name(&self, index: u32) -> &str {
         return REGISTER_NAME[index as usize];
     }
 
@@ -91,11 +91,11 @@ impl Emulator {
         return value;
     }
 
-    fn code8(&mut self, index: usize) -> u32 {
+    fn code8(&self, index: usize) -> u32 {
         return self.memory[self.eip + index].into();
     }
 
-    fn code32(&mut self, index: usize) -> u32 {
+    fn code32(&self, index: usize) -> u32 {
         let mut value: u32 = 0;
         let mut data: String = String::new();
 
@@ -143,29 +143,29 @@ impl Emulator {
             self.epi_inc();
             println!("opcode: {:2X}", code);
             if (0x50 <= code) && (code <= (0x50 + 7)) {
-                let reg = (code - 0x50) as usize;
-                let reg_name = REGISTER_NAME[reg];
-                println!("reg: {}", REGISTER_NAME[reg]);
+                let reg = code - 0x50;
+                let reg_name = self.register_name(reg);
+                println!("reg: {}", reg_name);
                 println!("push {},?", reg_name);
                 self.esp_sub4();
                 let esp = self.esp();
-                self.mem_set32(esp, self.register[reg]);
+                self.mem_set32(esp, self.register[reg as usize]);
             } else if (0x58 <= code) && (code <= (0x58 + 7)) {
-                let reg = (code - 0x58) as usize;
-                let reg_name = REGISTER_NAME[reg];
-                println!("reg: {}", REGISTER_NAME[reg]);
+                let reg = code - 0x58;
+                let reg_name = self.register_name(reg);
+                println!("reg: {}", reg_name);
                 println!("pop {},?", reg_name);
                 let esp = self.esp();
-                self.register[reg] = self.mem_get32(esp);
+                self.register[reg as usize] = self.mem_get32(esp);
                 self.esp_add4();
             } else if (0xb8 <= code) && (code <= (0xb8 + 7)) {
-                let reg = (code - 0xb8) as usize;
-                let reg_name = REGISTER_NAME[reg];
-                println!("reg: {}", REGISTER_NAME[reg]);
+                let reg = code - 0xb8;
+                let reg_name = self.register_name(reg);
+                println!("reg: {}", reg_name);
                 println!("mov {},?", reg_name);
                 let value = self.code32(0);
                 println!("mov {},{:#X}",reg_name,  value);
-                self.register[reg] = value;
+                self.register[reg as usize] = value;
                 self.epi_add4();
             } else if code == 0x89 {
                 let modrm_code = self.code8(0);
@@ -176,7 +176,7 @@ impl Emulator {
                 let reg_name1 = self.register_name(modrm.reg);
 
                 if modrm.mode == 0b11 {
-                    let reg_name2 = REGISTER_NAME[modrm.rm as usize];
+                    let reg_name2 = self.register_name(modrm.rm);
                     println!("mov {},{}", reg_name2, reg_name1);
                     self.register[modrm.rm as usize] = self.register[modrm.reg as usize];
                 } else {
@@ -209,14 +209,9 @@ impl Emulator {
     }
 
     pub fn dump_register(&mut self) {
-        let mut count = 0;
-        loop {
-            if count == self.register.len() {
-                break;
-            }
-            let reg_name = REGISTER_NAME[count];
-            println!("{} = {:#010X}", reg_name, self.register[count]);
-            count += 1;
+        for i in 0..self.register.len() {
+            let reg_name = self.register_name(i as u32);
+            println!("{} = {:#010X}", reg_name, self.register[i]);
         }
     }
 }
