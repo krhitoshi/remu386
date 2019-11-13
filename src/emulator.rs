@@ -10,9 +10,9 @@ pub const MEMORY_SIZE: u32 = 1024 * 1024;
 // }
 
 pub struct Emulator {
-    pub memory: [u8; MEMORY_SIZE as usize],
-    pub eip: usize,
-    pub register: [u32; 8]
+    memory: [u8; MEMORY_SIZE as usize],
+    eip: usize,
+    register: [u32; 8]
 }
 
 struct ModRM {
@@ -37,19 +37,19 @@ impl Emulator {
         file.read(&mut self.memory);
     }
 
-    pub fn epi_add4(&mut self) {
+    fn epi_add4(&mut self) {
         self.eip += 4;
     }
 
-    pub fn epi_inc(&mut self) {
+    fn epi_inc(&mut self) {
         self.eip += 1;
     }
 
-    pub fn code8(&mut self, index: usize) -> u32 {
+    fn code8(&mut self, index: usize) -> u32 {
         return self.memory[self.eip + index].into();
     }
 
-    pub fn code32(&mut self, index: usize) -> u32 {
+    fn code32(&mut self, index: usize) -> u32 {
         let mut value: u32 = 0;
         let mut data: String = String::new();
 
@@ -75,7 +75,7 @@ impl Emulator {
         return value;
     }
 
-    pub fn read_modrm(&mut self, code: u32) -> ModRM {
+    fn read_modrm(&mut self, code: u32) -> ModRM {
         println!("ModR/M: {:X} {:#8b}", code, code);
 
         let mut modrm = ModRM {

@@ -5,11 +5,6 @@ use std::path::Path;
 
 mod emulator;
 
-enum Register {
-    EAX = 0, ECX = 1, EDX = 2, EBX =3,
-    ESP = 4, EBP = 5, ESI = 6, EDI = 7
-}
-
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() != 2 {
