@@ -69,7 +69,7 @@ impl Emulator {
             let temp = (value & mask) >> 8*i;
             let offset = (address + i) as usize;
             self.memory[offset] = temp as u8;
-            println!("hex: {:02X}", temp);
+            // println!("hex: {:02X}", temp);
         }
     }
 
@@ -79,11 +79,7 @@ impl Emulator {
 
         for i in 0..4 {
             let temp = self.memory[(address + i) as usize] as u32;
-            // let mask = 0xff << 8*i;
-            // let temp = (value & mask) >> 8*i;
-            // let offset = (address + i) as usize;
-            // self.memory[offset] = temp as u8;
-            println!("hex: {:02X}", temp);
+            // println!("hex: {:02X}", temp);
             value += (temp << 8 * i);
         }
         println!("value: {:08X}", value);
@@ -99,22 +95,15 @@ impl Emulator {
         let mut value: u32 = 0;
         let mut data: String = String::new();
 
-        let mut count = 0;
-        loop {
-            if count > 3 {
-                break;
-            }
-
-            let mut temp = self.code8(index + count);
+        for i in 0..4 {
+            let mut temp = self.code8(index + i);
             let str = format!("{:2X}", temp);
             data.push_str(&str);
-            println!("hex: {:2X}", temp);
-            println!("bin: {:032b}", temp);
-            temp <<= 8 * count;
-            println!("bin: {:032b}", temp);
+            // println!("hex: {:2X}", temp);
+            // println!("bin: {:032b}", temp);
+            temp <<= 8 * i;
+            // println!("bin: {:032b}", temp);
             value += temp;
-
-            count += 1;
         }
         println!("data: {}", data);
 
@@ -155,14 +144,15 @@ impl Emulator {
                 println!("reg: {}", REGISTER_NAME[reg]);
                 println!("push {},?", reg_name);
                 self.esp_sub4();
-                self.mem_set32(self.register[Register::ESP as usize],
-                               self.register[reg]);
+                let esp = self.esp();
+                self.mem_set32(esp, self.register[reg]);
             } else if (0x58 <= code) && (code <= (0x58 + 7)) {
                 let reg = (code - 0x58) as usize;
                 let reg_name = REGISTER_NAME[reg];
                 println!("reg: {}", REGISTER_NAME[reg]);
                 println!("pop {},?", reg_name);
-                self.register[reg] = self.mem_get32(self.register[Register::ESP as usize]);
+                let esp = self.esp();
+                self.register[reg] = self.mem_get32(esp);
                 self.esp_add4();
             } else if (0xb8 <= code) && (code <= (0xb8 + 7)) {
                 let reg = (code - 0xb8) as usize;
