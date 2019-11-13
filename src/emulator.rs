@@ -40,12 +40,49 @@ impl Emulator {
         file.read(&mut self.memory);
     }
 
+    fn esp(&mut self) -> u32 {
+        return self.register[Register::ESP as usize];
+    }
+
+    fn esp_sub4(&mut self) {
+        self.register[Register::ESP as usize] -= 4;
+    }
+
     fn epi_add4(&mut self) {
         self.eip += 4;
     }
 
     fn epi_inc(&mut self) {
         self.eip += 1;
+    }
+
+    fn mem_set32(&mut self, index: u32, value: u32) {
+        println!("index: {:08X}", index);
+        println!("value: {:08X}", value);
+
+        let mask1 = 0xff000000;
+        let temp1 = (value & mask1) >> 8*3;
+        let offset1 = (index + 3) as usize;
+        self.memory[offset1] = temp1 as u8;
+        println!("hex: {:02X}", temp1);
+
+        let mask2 = 0x00ff0000;
+        let temp2 = (value & mask2) >> 8*2;
+        let offset2 = (index + 2) as usize;
+        self.memory[offset2] = temp2 as u8;
+        println!("hex: {:02X}", temp2);
+
+        let mask3 = 0x0000ff00;
+        let temp3 = (value & mask3) >> 8*1;
+        let offset3 = (index + 1) as usize;
+        self.memory[offset3] = temp3 as u8;
+        println!("hex: {:02X}", temp3);
+
+        let mask4 = 0x000000ff;
+        let temp4 = (value & mask4) >> 8*0;
+        println!("hex: {:02X}", temp4);
+        let offset4 = (index + 0) as usize;
+        self.memory[offset4] = temp4 as u8;
     }
 
     fn code8(&mut self, index: usize) -> u32 {
@@ -106,8 +143,16 @@ impl Emulator {
             let code = self.code8(0);
             self.epi_inc();
             println!("opcode: {:2X}", code);
-
-            if (0xb8 <= code) && (code <= (0xb8 + 7)) {
+            if (0x50 <= code) && (code <= (0x50 + 7)) {
+                let reg = (code - 0x50) as usize;
+                let reg_name = REGISTER_NAME[reg];
+                println!("reg: {}", REGISTER_NAME[reg]);
+                println!("push {},?", reg_name);
+                self.esp_sub4();
+                self.mem_set32(self.register[Register::ESP as usize],
+                               self.register[reg]);
+                // self.memory[self.esp()] = self.register[reg];
+            } else if (0xb8 <= code) && (code <= (0xb8 + 7)) {
                 let reg = (code - 0xb8) as usize;
                 let reg_name = REGISTER_NAME[reg];
                 println!("reg: {}", REGISTER_NAME[reg]);
