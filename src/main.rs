@@ -17,6 +17,12 @@ struct Emulator {
     register: [u32; 8]
 }
 
+struct ModRM {
+    mode: u32,
+    reg: u32,
+    rm: u32
+}
+
 static REGISTER_NAME: [&str; 8] =
  ["EAX", "ECX", "EDX", "EBX", "ESP", "EBP", "ESI", "EDI"];
 
@@ -50,25 +56,17 @@ fn main() {
             emu.register[reg] = value;
             emu.eip += 4;
         } else if code == 0x89 {
-            let mod_rm = code8(&emu, 0);
+            let modrm_code = code8(&emu, 0);
             emu.eip += 1;
-            println!("{:#8b}",mod_rm);
-            let mod_mask = 0b11000000;
-            let _mod = (mod_rm & mod_mask) >> 6;
-            println!("Mod: {:#04b}", _mod);
-            let reg_mask = 0b00111000;
-            let reg = ((mod_rm & reg_mask) >> 3) as usize;
-            println!("REG: {:#05b}", reg);
-            let rm_mask = 0b00000111;
-            let rm = (mod_rm & rm_mask) as usize;
-            println!("R/M: {:#05b}", rm);
 
-            let reg_name1 = REGISTER_NAME[reg];
+            let modrm = read_modrm(modrm_code);
 
-            if _mod == 0b11 {
-                let reg_name2 = REGISTER_NAME[rm];
+            let reg_name1 = REGISTER_NAME[modrm.reg as usize];
+
+            if modrm.mode == 0b11 {
+                let reg_name2 = REGISTER_NAME[modrm.rm as usize];
                 println!("mov {},{}", reg_name2, reg_name1);
-                emu.register[rm] = emu.register[reg];
+                emu.register[modrm.rm as usize] = emu.register[modrm.reg as usize];
             } else {
                 println!("unknown Mod");
                 println!("break");
@@ -115,6 +113,30 @@ fn code32(emu: &Emulator, index: usize) -> u32 {
     println!("data: {}", data);
 
     return value;
+}
+
+fn read_modrm(code: u32) -> ModRM {
+    println!("ModR/M: {:X} {:#8b}", code, code);
+
+    let mut modrm = ModRM {
+        mode: 0,
+        reg: 0,
+        rm: 0
+    };
+
+    let mod_mask = 0b11000000;
+    modrm.mode = (code & mod_mask) >> 6;
+
+    let reg_mask = 0b00111000;
+    modrm.reg = (code & reg_mask) >> 3;
+
+    let rm_mask = 0b00000111;
+    modrm.rm = code & rm_mask;
+
+    println!("Mod: {:02b}, REG: {:03b}, R/M: {:03b}",
+             modrm.mode, modrm.reg, modrm.rm);
+
+    return modrm;
 }
 
 fn dump_register(emu: &Emulator) {
