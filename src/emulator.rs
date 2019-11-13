@@ -10,6 +10,9 @@ pub struct Emulator {
     pub register: [u32; 8]
 }
 
+static REGISTER_NAME: [&str; 8] =
+ ["EAX", "ECX", "EDX", "EBX", "ESP", "EBP", "ESI", "EDI"];
+
 impl Emulator {
     pub fn new() -> Emulator {
         return Emulator {
@@ -29,5 +32,17 @@ impl Emulator {
 
     pub fn epi_inc(&mut self) {
         self.eip += 1;
+    }
+
+    pub fn dump_register(&mut self) {
+        let mut count = 0;
+        loop {
+            if count == self.register.len() {
+                break;
+            }
+            let reg_name = REGISTER_NAME[count];
+            println!("{} = {:#010X}", reg_name, self.register[count]);
+            count += 1;
+        }
     }
 }
