@@ -203,22 +203,14 @@ impl Emulator {
     }
 
     pub fn dump_memory(&mut self) {
-        let mut index = (MEMORY_SIZE - 1) as usize;
-        loop {
-            if index < 0xfff90 {
-                break;
-            }
+        for i in 1..10 {
+            let index = (MEMORY_SIZE - 4 * i) as usize;
             let mut data: String = String::new();
-            let str1 = format!("{:02X}", self.memory[index-3]);
-            data.push_str(&str1);
-            let str2 = format!("{:02X}", self.memory[index-2]);
-            data.push_str(&str2);
-            let str3 = format!("{:02X}", self.memory[index-1]);
-            data.push_str(&str3);
-            let str4 = format!("{:02X}", self.memory[index]);
-            data.push_str(&str4);
-            println!("{:08X} : {}", index-3, data);
-            index -= 4;
+            for j in 0..4 {
+                let str1 = format!("{:02X}", self.memory[index+j]);
+                data.push_str(&str1);
+            }
+            println!("{:08X} : {}", index, data);
         }
     }
 
