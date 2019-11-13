@@ -60,6 +60,10 @@ impl Emulator {
         self.eip += 1;
     }
 
+    fn register_name(&mut self, index: u32) -> &str {
+        return REGISTER_NAME[index as usize];
+    }
+
     fn mem_set32(&mut self, address: u32, value: u32) {
         println!("address: {:08X}", address);
         println!("value: {:08X}", value);
@@ -169,7 +173,7 @@ impl Emulator {
 
                 let modrm = self.read_modrm(modrm_code);
 
-                let reg_name1 = REGISTER_NAME[modrm.reg as usize];
+                let reg_name1 = self.register_name(modrm.reg);
 
                 if modrm.mode == 0b11 {
                     let reg_name2 = REGISTER_NAME[modrm.rm as usize];
