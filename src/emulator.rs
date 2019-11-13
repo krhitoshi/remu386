@@ -1,3 +1,6 @@
+use std::fs::File;
+use std::io::Read;
+
 // 1MB 0x00000 - 0xfffff
 pub const MEMORY_SIZE: u32 = 1024 * 1024;
 
@@ -14,6 +17,10 @@ impl Emulator {
             eip: 0,
             register: [0; 8]
         };
+    }
+
+    pub fn load_memory(&mut self, mut file: &File) {
+        file.read(&mut self.memory);
     }
 
     pub fn epi_add4(&mut self) {
