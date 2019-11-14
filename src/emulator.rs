@@ -132,7 +132,9 @@ impl Emulator {
         return value;
     }
 
-    fn read_modrm(&self, code: u32) -> ModRM {
+    fn read_modrm(&mut self) -> ModRM {
+        let code = self.code8(0);
+        self.epi_inc();
         println!("ModR/M: {:X} {:#8b}", code, code);
 
         let mut modrm = ModRM {
@@ -158,10 +160,7 @@ impl Emulator {
     }
 
     fn read_effective_address(&mut self) -> (u32, u32) {
-        let modrm_code = self.code8(0);
-        self.epi_inc();
-
-        let modrm = self.read_modrm(modrm_code);
+        let modrm = self.read_modrm();
         if modrm.mode == 0b01 {
             if modrm.rm == 0b100 {
                 panic!("not implemented ModR/M rm: 100");
@@ -239,10 +238,7 @@ impl Emulator {
     }
 
     fn opcode81(&mut self) {
-        let modrm_code = self.code8(0);
-        self.epi_inc();
-
-        let modrm = self.read_modrm(modrm_code);
+        let modrm = self.read_modrm();
         println!("opcode: {}", modrm.opcode);
         if modrm.opcode == 0 {
             self.add_rm32_imm32(modrm);
@@ -254,10 +250,7 @@ impl Emulator {
     }
 
     fn opcode83(&mut self) {
-        let modrm_code = self.code8(0);
-        self.epi_inc();
-
-        let modrm = self.read_modrm(modrm_code);
+        let modrm = self.read_modrm();
         println!("opcode: {}", modrm.opcode);
         if modrm.opcode == 0 {
             self.add_rm32_imm8(modrm);
@@ -309,10 +302,7 @@ impl Emulator {
     }
 
     fn mov_rm32_r32(&mut self) {
-        let modrm_code = self.code8(0);
-        self.epi_inc();
-
-        let modrm = self.read_modrm(modrm_code);
+        let modrm = self.read_modrm();
 
         let reg_name1 = self.register_name(modrm.reg);
 
