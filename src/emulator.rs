@@ -252,6 +252,13 @@ impl Emulator {
         }
     }
 
+    fn add_eax_imm32(&mut self) {
+        let value = self.code32(0);
+        println!("add EAX,{:08X}", value);
+        self.register[Register::EAX as usize] += value;
+        self.epi_add4();
+    }
+
     fn add_r32_rm32(&mut self) {
         let (reg, address) = self.read_effective_address();
         self.register[reg as usize] += self.mem_get32(address);
@@ -312,17 +319,12 @@ impl Emulator {
             if code == 0x03 {
                 self.add_r32_rm32();
             } else if code == 0x05 {
-                // add, EAX
-                let value = self.code32(0);
-                println!("add EAX,{:08X}", value);
-                self.register[Register::EAX as usize] += value;
-                self.epi_add4();
+                self.add_eax_imm32();
             } else if code == 0x2b {
                 self.sub_r32_rm32();
              } else if code == 0x2d {
-                // sub, EAX
                 let value = self.code32(0);
-                println!("add EAX,{:08X}", value);
+                println!("sub EAX,{:08X}", value);
                 self.register[Register::EAX as usize] -= value;
                 self.epi_add4();
             } else if (0x50 <= code) && (code <= (0x50 + 7)) {
