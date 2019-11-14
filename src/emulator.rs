@@ -157,6 +157,25 @@ impl Emulator {
         return modrm;
     }
 
+    fn read_effective_address(&mut self) -> (u32, u32) {
+        let modrm_code = self.code8(0);
+        self.epi_inc();
+
+        let modrm = self.read_modrm(modrm_code);
+        if modrm.mode == 0b01 {
+            let disp = self.sign_code8(0);
+            self.epi_inc();
+            let reg_name2 = self.register_name(modrm.rm);
+            println!("rm: {},", reg_name2);
+            let temp = self.register[modrm.rm as usize] as i32;
+            let address = (temp + disp) as u32;
+            return (modrm.reg, address);
+        } else {
+            println!("unknown Mod: {:02b}", modrm.mode);
+            panic!("break");
+        }
+    }
+
     pub fn launch(&mut self) {
         loop {
             println!("EIP: {:08X}", self.eip);
@@ -164,54 +183,20 @@ impl Emulator {
             self.epi_inc();
             println!("opcode: {:02X}", code);
             if code == 0x03 {
-                let modrm_code = self.code8(0);
-                self.epi_inc();
-
-                let modrm = self.read_modrm(modrm_code);
-                if modrm.mode == 0b01 {
-                    let disp = self.sign_code8(0);
-                    self.epi_inc();
-                    let reg_name2 = self.register_name(modrm.rm);
-                    println!("rm: {},", reg_name2);
-                    let temp = self.register[modrm.rm as usize] as i32;
-                    let address = (temp + disp) as u32;
-                    let reg_name1 = self.register_name(modrm.reg);
-                    println!("add: {},[{}+{:#04X}] [{:08X}]",
-                             reg_name1, reg_name2, disp, address);
-                    self.register[modrm.reg as usize] += self.mem_get32(address);
-                } else {
-                    println!("unknown Mod: {:02b}", modrm.mode);
-                    println!("break");
-                    break;
-                }
-            } else if code == 0x05 {
+                // add
+                let (reg, address) = self.read_effective_address();
+                self.register[reg as usize] += self.mem_get32(address);
+              } else if code == 0x05 {
                 // add, EAX
                 let value = self.code32(0);
                 println!("add EAX,{:08X}", value);
                 self.register[Register::EAX as usize] += value;
                 self.epi_add4();
             } else if code == 0x2b {
-                let modrm_code = self.code8(0);
-                self.epi_inc();
-
-                let modrm = self.read_modrm(modrm_code);
-                if modrm.mode == 0b01 {
-                    let disp = self.sign_code8(0);
-                    self.epi_inc();
-                    let reg_name2 = self.register_name(modrm.rm);
-                    println!("rm: {},", reg_name2);
-                    let temp = self.register[modrm.rm as usize] as i32;
-                    let address = (temp + disp) as u32;
-                    let reg_name1 = self.register_name(modrm.reg);
-                    println!("sub: {},[{}+{:#04X}] [{:08X}]",
-                             reg_name1, reg_name2, disp, address);
-                    self.register[modrm.reg as usize] -= self.mem_get32(address);
-                } else {
-                    println!("unknown Mod: {:02b}", modrm.mode);
-                    println!("break");
-                    break;
-                }
-            } else if code == 0x2d {
+                // sub
+                let (reg, address) = self.read_effective_address();
+                self.register[reg as usize] -= self.mem_get32(address);
+             } else if code == 0x2d {
                 // sub, EAX
                 let value = self.code32(0);
                 println!("add EAX,{:08X}", value);
@@ -286,26 +271,9 @@ impl Emulator {
                     break;
                 }
             } else if code == 0x8b {
-                let modrm_code = self.code8(0);
-                self.epi_inc();
-
-                let modrm = self.read_modrm(modrm_code);
-                if modrm.mode == 0b01 {
-                    let disp = self.sign_code8(0);
-                    self.epi_inc();
-                    let reg_name2 = self.register_name(modrm.rm);
-                    println!("rm: {},", reg_name2);
-                    let temp = self.register[modrm.rm as usize] as i32;
-                    let address = (temp + disp) as u32;
-                    let reg_name1 = self.register_name(modrm.reg);
-                    println!("move: {},[{}+{:#04X}] [{:08X}]",
-                             reg_name1, reg_name2, disp, address);
-                    self.register[modrm.reg as usize] = self.mem_get32(address);
-                } else {
-                    println!("unknown Mod: {:02b}", modrm.mode);
-                    println!("break");
-                    break;
-                }
+                // mov
+                let (reg, address) = self.read_effective_address();
+                self.register[reg as usize] = self.mem_get32(address);
             } else if code == 0xe8 {
                 // call
                 let value = self.code32(0);
