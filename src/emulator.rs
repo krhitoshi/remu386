@@ -178,6 +178,13 @@ impl Emulator {
         }
     }
 
+    fn push_imm8(&mut self) {
+        let value = self.code8(0);
+        self.epi_inc();
+        println!("push {:#04X} {}", value, value);
+        self.push32(value as u32);
+    }
+
     fn opcode81(&mut self) {
         let modrm_code = self.code8(0);
         self.epi_inc();
@@ -315,10 +322,7 @@ impl Emulator {
                 println!("value: {:X}", value);
                 self.register[reg as usize] = value;
             } else if code == 0x6a {
-                let value = self.code8(0);
-                self.epi_inc();
-                println!("push {:#04X} {}", value, value);
-                self.push32(value as u32);
+                self.push_imm8();
             } else if code == 0x81 {
                 self.opcode81();
             } else if code == 0x83 {
