@@ -339,9 +339,7 @@ impl Emulator {
                     self.eip = address;
                 }
             } else {
-                println!("unknown code: {:02X}", code);
-                println!("break");
-                break;
+                panic!("unknown code: {:02X}", code);
             }
             println!("---");
         }
