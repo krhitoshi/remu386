@@ -18,7 +18,8 @@ pub struct Emulator {
 struct ModRM {
     mode: u32,
     reg: u32,
-    rm: u32
+    rm: u32,
+    opcode: u32
 }
 
 static REGISTER_NAME: [&str; 8] =
@@ -106,6 +107,12 @@ impl Emulator {
         return self.memory[address].into();
     }
 
+    fn sign_code8(&self, index: u32) -> i32 {
+        let address = (self.eip + index) as usize;
+        let value = self.memory[address] as i8;
+        return value.into();
+    }
+
     fn code32(&self, index: u32) -> u32 {
         let mut value: u32 = 0;
         let mut data: String = String::new();
@@ -131,7 +138,8 @@ impl Emulator {
         let mut modrm = ModRM {
             mode: 0,
             reg: 0,
-            rm: 0
+            rm: 0,
+            opcode: 0
         };
 
         let mod_mask = 0b11000000;
@@ -139,6 +147,7 @@ impl Emulator {
 
         let reg_mask = 0b00111000;
         modrm.reg = (code & reg_mask) >> 3;
+        modrm.opcode = modrm.reg;
 
         let rm_mask = 0b00000111;
         modrm.rm = code & rm_mask;
@@ -154,7 +163,13 @@ impl Emulator {
             let code = self.code8(0);
             self.epi_inc();
             println!("opcode: {:02X}", code);
-            if (0x50 <= code) && (code <= (0x50 + 7)) {
+            if code == 0x05 {
+                // add, EAX
+                let value = self.code32(0);
+                println!("add EAX,{:08X}", value);
+                self.register[Register::EAX as usize] += value;
+                self.epi_add4();
+            } else if (0x50 <= code) && (code <= (0x50 + 7)) {
                 let reg = code - 0x50;
                 let reg_name = self.register_name(reg);
                 println!("reg: {}", reg_name);
@@ -167,6 +182,20 @@ impl Emulator {
                 println!("reg: {}", reg_name);
                 println!("pop {},?", reg_name);
                 self.register[reg as usize] = self.pop32();
+            } else if code == 0x83 {
+                // sub
+                println!("sub");
+                let modrm_code = self.code8(0);
+                self.epi_inc();
+
+                let modrm = self.read_modrm(modrm_code);
+                println!("sub opcode: {}", modrm.opcode);
+                let reg_name = self.register_name(modrm.rm);
+                let value = self.sign_code8(0);
+                println!("sub {},{}", reg_name, value);
+                self.epi_inc();
+                let temp = self.register[modrm.rm as usize] as i32;
+                self.register[modrm.rm as usize] = (temp - value) as u32;
             } else if code == 0xe8 {
                 // call
                 let value = self.code32(0);
@@ -210,7 +239,7 @@ impl Emulator {
                     self.eip = address;
                 }
             } else {
-                println!("unknown code");
+                println!("unknown code: {:02X}", code);
                 println!("break");
                 break;
             }
