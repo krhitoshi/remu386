@@ -163,6 +163,9 @@ impl Emulator {
 
         let modrm = self.read_modrm(modrm_code);
         if modrm.mode == 0b01 {
+            if modrm.rm == 0b100 {
+                panic!("not implemented ModR/M rm: 100");
+            }
             let disp = self.sign_code8(0);
             self.epi_inc();
             let reg_name2 = self.register_name(modrm.rm);
@@ -326,6 +329,16 @@ impl Emulator {
     }
 
     pub fn dump_memory(&self) {
+        for i in 0..20 {
+            let index = (4 * i) as usize;
+            let mut data: String = String::new();
+            for j in 0..4 {
+                let str1 = format!("{:02X}", self.memory[index+j]);
+                data.push_str(&str1);
+            }
+            println!("{:08X} : {}", index, data);
+        }
+        println!("---");
         for i in 1..10 {
             let index = (MEMORY_SIZE - 4 * i) as usize;
             let mut data: String = String::new();
