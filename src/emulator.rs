@@ -174,8 +174,32 @@ impl Emulator {
             let address = (temp + disp) as u32;
             return (modrm.reg, address);
         } else {
-            println!("unknown Mod: {:02b}", modrm.mode);
-            panic!("break");
+            panic!("unknown Mod: {:02b}", modrm.mode);
+        }
+    }
+
+    fn opcode83(&mut self) {
+        let modrm_code = self.code8(0);
+        self.epi_inc();
+
+        let modrm = self.read_modrm(modrm_code);
+        println!("opcode: {}", modrm.opcode);
+        if modrm.opcode == 0 {
+            let reg_name = self.register_name(modrm.rm);
+            let value = self.sign_code8(0);
+            println!("add {},{}", reg_name, value);
+            self.epi_inc();
+            let temp = self.register[modrm.rm as usize] as i32;
+            self.register[modrm.rm as usize] = (temp + value) as u32;
+        } else if modrm.opcode == 5 {
+            let reg_name = self.register_name(modrm.rm);
+            let value = self.sign_code8(0);
+            println!("sub {},{}", reg_name, value);
+            self.epi_inc();
+            let temp = self.register[modrm.rm as usize] as i32;
+            self.register[modrm.rm as usize] = (temp - value) as u32;
+        } else {
+            panic!("unknown sub opcode: {}", modrm.opcode);
         }
     }
 
@@ -296,30 +320,7 @@ impl Emulator {
                     break;
                 }
             } else if code == 0x83 {
-                let modrm_code = self.code8(0);
-                self.epi_inc();
-
-                let modrm = self.read_modrm(modrm_code);
-                println!("opcode: {}", modrm.opcode);
-                if modrm.opcode == 0 {
-                    let reg_name = self.register_name(modrm.rm);
-                    let value = self.sign_code8(0);
-                    println!("add {},{}", reg_name, value);
-                    self.epi_inc();
-                    let temp = self.register[modrm.rm as usize] as i32;
-                    self.register[modrm.rm as usize] = (temp + value) as u32;
-                } else if modrm.opcode == 5 {
-                    let reg_name = self.register_name(modrm.rm);
-                    let value = self.sign_code8(0);
-                    println!("sub {},{}", reg_name, value);
-                    self.epi_inc();
-                    let temp = self.register[modrm.rm as usize] as i32;
-                    self.register[modrm.rm as usize] = (temp - value) as u32;
-                } else {
-                    println!("unknown sub opcode: {}", modrm.opcode);
-                    println!("break");
-                    break;
-                }
+                self.opcode83();
             } else if code == 0x8b {
                 self.mov_r32_rm32();
             } else if code == 0xe8 {
