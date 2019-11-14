@@ -229,6 +229,15 @@ impl Emulator {
         self.register[modrm.rm as usize] -= value;
     }
 
+    fn sub_rm32_imm8(&mut self, modrm: ModRM) {
+        let reg_name = self.register_name(modrm.rm);
+        let value = self.sign_code8(0);
+        println!("sub {},{}", reg_name, value);
+        self.epi_inc();
+        let temp = self.register[modrm.rm as usize] as i32;
+        self.register[modrm.rm as usize] = (temp - value) as u32;
+    }
+
     fn opcode81(&mut self) {
         let modrm_code = self.code8(0);
         self.epi_inc();
@@ -253,12 +262,7 @@ impl Emulator {
         if modrm.opcode == 0 {
             self.add_rm32_imm8(modrm);
         } else if modrm.opcode == 5 {
-            let reg_name = self.register_name(modrm.rm);
-            let value = self.sign_code8(0);
-            println!("sub {},{}", reg_name, value);
-            self.epi_inc();
-            let temp = self.register[modrm.rm as usize] as i32;
-            self.register[modrm.rm as usize] = (temp - value) as u32;
+            self.sub_rm32_imm8(modrm);
         } else {
             panic!("unknown sub opcode: {}", modrm.opcode);
         }
