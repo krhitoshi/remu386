@@ -178,6 +178,29 @@ impl Emulator {
         }
     }
 
+    fn opcode81(&mut self) {
+        let modrm_code = self.code8(0);
+        self.epi_inc();
+
+        let modrm = self.read_modrm(modrm_code);
+        println!("opcode: {}", modrm.opcode);
+        if modrm.opcode == 0 {
+            let reg_name = self.register_name(modrm.rm);
+            let value = self.code32(0);
+            println!("add {},{}", reg_name, value);
+            self.epi_add4();
+            self.register[modrm.rm as usize] += value;
+        } else if modrm.opcode == 5 {
+            let reg_name = self.register_name(modrm.rm);
+            let value = self.code32(0);
+            println!("sub {},{}", reg_name, value);
+            self.epi_add4();
+            self.register[modrm.rm as usize] -= value;
+        } else {
+            panic!("unknown sub opcode: {}", modrm.opcode);
+        }
+    }
+
     fn opcode83(&mut self) {
         let modrm_code = self.code8(0);
         self.epi_inc();
@@ -297,28 +320,7 @@ impl Emulator {
                 println!("push {:#04X} {}", value, value);
                 self.push32(value as u32);
             } else if code == 0x81 {
-                let modrm_code = self.code8(0);
-                self.epi_inc();
-
-                let modrm = self.read_modrm(modrm_code);
-                println!("opcode: {}", modrm.opcode);
-                if modrm.opcode == 0 {
-                    let reg_name = self.register_name(modrm.rm);
-                    let value = self.code32(0);
-                    println!("add {},{}", reg_name, value);
-                    self.epi_add4();
-                    self.register[modrm.rm as usize] += value;
-                } else if modrm.opcode == 5 {
-                    let reg_name = self.register_name(modrm.rm);
-                    let value = self.code32(0);
-                    println!("sub {},{}", reg_name, value);
-                    self.epi_add4();
-                    self.register[modrm.rm as usize] -= value;
-                } else {
-                    println!("unknown sub opcode: {}", modrm.opcode);
-                    println!("break");
-                    break;
-                }
+                self.opcode81();
             } else if code == 0x83 {
                 self.opcode83();
             } else if code == 0x8b {
