@@ -150,9 +150,10 @@ impl Emulator {
 
     pub fn launch(&mut self) {
         loop {
+            println!("EIP: {:08X}", self.eip);
             let code = self.code8(0);
             self.epi_inc();
-            println!("opcode: {:2X}", code);
+            println!("opcode: {:02X}", code);
             if (0x50 <= code) && (code <= (0x50 + 7)) {
                 let reg = code - 0x50;
                 let reg_name = self.register_name(reg);
