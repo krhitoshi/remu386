@@ -70,14 +70,14 @@ impl Emulator {
     }
 
     fn pop32(&mut self) -> u32 {
-        return self.mem_get32(self.esp());
+        let value = self.mem_get32(self.esp());
         self.esp_add4();
+        return value;
     }
 
     fn mem_set32(&mut self, address: u32, value: u32) {
-        println!("address: {:08X}", address);
-        println!("value: {:08X}", value);
-
+        // println!("address: {:08X}", address);
+        // println!("value: {:08X}", value);
         for i in 0..4 {
             let mask = 0xff << 8*i;
             let temp = (value & mask) >> 8*i;
@@ -88,7 +88,7 @@ impl Emulator {
     }
 
     fn mem_get32(&self, address: u32) -> u32 {
-        println!("address: {:08X}", address);
+        // println!("address: {:08X}", address);
         let mut value: u32 = 0;
 
         for i in 0..4 {
@@ -96,7 +96,7 @@ impl Emulator {
             // println!("hex: {:02X}", temp);
             value += (temp << 8 * i);
         }
-        println!("value: {:08X}", value);
+        // println!("value: {:08X}", value);
 
         return value;
     }
@@ -200,8 +200,14 @@ impl Emulator {
                 }
             } else if code == 0xc3 {
                 println!("ret");
-                println!("break");
-                break;
+                let address = self.pop32();
+                println!("ret => address: {:08X}", address);
+                if address == 0 {
+                    println!("break");
+                    break;
+                } else {
+                    self.eip = address;
+                }
             } else {
                 println!("unknown code");
                 println!("break");
