@@ -180,7 +180,6 @@ impl Emulator {
     fn push_r32(&mut self, code: u32) {
         let reg = code - 0x50;
         let reg_name = self.register_name(reg);
-        println!("reg: {}", reg_name);
         println!("push {}", reg_name);
         self.esp_sub4();
         self.mem_set32(self.esp(), self.register[reg as usize]);
@@ -196,7 +195,6 @@ impl Emulator {
     fn pop_r32(&mut self, code: u32) {
         let reg = code - 0x58;
         let reg_name = self.register_name(reg);
-        println!("reg: {}", reg_name);
         println!("pop {}", reg_name);
         let value = self.pop32();
         println!("value: {:X}", value);
@@ -293,8 +291,6 @@ impl Emulator {
     fn mov_r32_imm32(&mut self, code: u32) {
         let reg = code - 0xb8;
         let reg_name = self.register_name(reg);
-        println!("reg: {}", reg_name);
-        println!("mov {},?", reg_name);
         let value = self.code32(0);
         println!("mov {},{:#X}",reg_name,  value);
         self.register[reg as usize] = value;
