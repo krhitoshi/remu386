@@ -178,6 +178,15 @@ impl Emulator {
         }
     }
 
+    fn push_r32(&mut self, code: u32) {
+        let reg = code - 0x50;
+        let reg_name = self.register_name(reg);
+        println!("reg: {}", reg_name);
+        println!("push {}", reg_name);
+        self.esp_sub4();
+        self.mem_set32(self.esp(), self.register[reg as usize]);
+    }
+
     fn push_imm8(&mut self) {
         let value = self.code8(0);
         self.epi_inc();
@@ -307,12 +316,7 @@ impl Emulator {
                 self.register[Register::EAX as usize] -= value;
                 self.epi_add4();
             } else if (0x50 <= code) && (code <= (0x50 + 7)) {
-                let reg = code - 0x50;
-                let reg_name = self.register_name(reg);
-                println!("reg: {}", reg_name);
-                println!("push {}", reg_name);
-                self.esp_sub4();
-                self.mem_set32(self.esp(), self.register[reg as usize]);
+                self.push_r32(code);
             } else if (0x58 <= code) && (code <= (0x58 + 7)) {
                 let reg = code - 0x58;
                 let reg_name = self.register_name(reg);
