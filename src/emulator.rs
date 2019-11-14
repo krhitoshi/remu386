@@ -205,6 +205,24 @@ impl Emulator {
         self.epi_add4();
     }
 
+    fn mov_rm32_r32(&mut self) {
+        let modrm_code = self.code8(0);
+        self.epi_inc();
+
+        let modrm = self.read_modrm(modrm_code);
+
+        let reg_name1 = self.register_name(modrm.reg);
+
+        if modrm.mode == 0b11 {
+            let reg_name2 = self.register_name(modrm.rm);
+            println!("mov {},{}", reg_name2, reg_name1);
+            self.register[modrm.rm as usize] = self.register[modrm.reg as usize];
+        } else {
+            println!("unknown Mod");
+            panic!("break");
+        }
+    }
+
     fn call_rel32(&mut self) {
         let value = self.code32(0);
         println!("call {:08X}", value);
@@ -309,22 +327,7 @@ impl Emulator {
             } else if (0xb8 <= code) && (code <= (0xb8 + 7)) {
                 self.mov_r32_imm32(code);
             } else if code == 0x89 {
-                let modrm_code = self.code8(0);
-                self.epi_inc();
-
-                let modrm = self.read_modrm(modrm_code);
-
-                let reg_name1 = self.register_name(modrm.reg);
-
-                if modrm.mode == 0b11 {
-                    let reg_name2 = self.register_name(modrm.rm);
-                    println!("mov {},{}", reg_name2, reg_name1);
-                    self.register[modrm.rm as usize] = self.register[modrm.reg as usize];
-                } else {
-                    println!("unknown Mod");
-                    println!("break");
-                    break;
-                }
+                self.mov_rm32_r32();
             } else if code == 0xc3 {
                 println!("ret");
                 let address = self.pop32();
