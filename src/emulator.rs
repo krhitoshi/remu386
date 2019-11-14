@@ -11,7 +11,7 @@ enum Register {
 
 pub struct Emulator {
     memory: [u8; MEMORY_SIZE as usize],
-    eip: usize,
+    eip: u32,
     register: [u32; 8]
 }
 
@@ -96,11 +96,12 @@ impl Emulator {
         return value;
     }
 
-    fn code8(&self, index: usize) -> u32 {
-        return self.memory[self.eip + index].into();
+    fn code8(&self, index: u32) -> u32 {
+        let address = (self.eip + index) as usize;
+        return self.memory[address].into();
     }
 
-    fn code32(&self, index: usize) -> u32 {
+    fn code32(&self, index: u32) -> u32 {
         let mut value: u32 = 0;
         let mut data: String = String::new();
 
@@ -166,7 +167,7 @@ impl Emulator {
                 let value = self.code32(0);
                 println!("call {:08X}", value);
                 self.push32(self.eip as u32 + 4);
-                self.eip += 4 + value as usize;
+                self.eip += 4 + value;
             } else if (0xb8 <= code) && (code <= (0xb8 + 7)) {
                 let reg = code - 0xb8;
                 let reg_name = self.register_name(reg);
