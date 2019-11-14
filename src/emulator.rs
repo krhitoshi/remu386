@@ -179,6 +179,11 @@ impl Emulator {
         }
     }
 
+    fn add_r32_rm32(&mut self) {
+        let (reg, address) = self.read_effective_address();
+        self.register[reg as usize] += self.mem_get32(address);
+    }
+
     pub fn launch(&mut self) {
         loop {
             println!("EIP: {:08X}", self.eip);
@@ -186,10 +191,8 @@ impl Emulator {
             self.epi_inc();
             println!("opcode: {:02X}", code);
             if code == 0x03 {
-                // add
-                let (reg, address) = self.read_effective_address();
-                self.register[reg as usize] += self.mem_get32(address);
-              } else if code == 0x05 {
+                self.add_r32_rm32();
+            } else if code == 0x05 {
                 // add, EAX
                 let value = self.code32(0);
                 println!("add EAX,{:08X}", value);
