@@ -64,6 +64,11 @@ impl Emulator {
         return REGISTER_NAME[index as usize];
     }
 
+    fn push32(&mut self, value: u32) {
+        self.esp_sub4();
+        self.mem_set32(self.esp(), value);
+    }
+
     fn mem_set32(&mut self, address: u32, value: u32) {
         println!("address: {:08X}", address);
         println!("value: {:08X}", value);
@@ -156,6 +161,12 @@ impl Emulator {
                 println!("pop {},?", reg_name);
                 self.register[reg as usize] = self.mem_get32(self.esp());
                 self.esp_add4();
+            } else if code == 0xe8 {
+                // call
+                let value = self.code32(0);
+                println!("call {:08X}", value);
+                self.push32(self.eip as u32 + 4);
+                self.eip += 4 + value as usize;
             } else if (0xb8 <= code) && (code <= (0xb8 + 7)) {
                 let reg = code - 0xb8;
                 let reg_name = self.register_name(reg);
