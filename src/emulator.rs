@@ -169,6 +169,12 @@ impl Emulator {
                 println!("add EAX,{:08X}", value);
                 self.register[Register::EAX as usize] += value;
                 self.epi_add4();
+            } else if code == 0x2d {
+                // sub, EAX
+                let value = self.code32(0);
+                println!("add EAX,{:08X}", value);
+                self.register[Register::EAX as usize] -= value;
+                self.epi_add4();
             } else if (0x50 <= code) && (code <= (0x50 + 7)) {
                 let reg = code - 0x50;
                 let reg_name = self.register_name(reg);
@@ -182,20 +188,54 @@ impl Emulator {
                 println!("reg: {}", reg_name);
                 println!("pop {},?", reg_name);
                 self.register[reg as usize] = self.pop32();
-            } else if code == 0x83 {
-                // sub
-                println!("sub");
+            } else if code == 0x81 {
                 let modrm_code = self.code8(0);
                 self.epi_inc();
 
                 let modrm = self.read_modrm(modrm_code);
-                println!("sub opcode: {}", modrm.opcode);
-                let reg_name = self.register_name(modrm.rm);
-                let value = self.sign_code8(0);
-                println!("sub {},{}", reg_name, value);
+                println!("opcode: {}", modrm.opcode);
+                if modrm.opcode == 0 {
+                    let reg_name = self.register_name(modrm.rm);
+                    let value = self.code32(0);
+                    println!("add {},{}", reg_name, value);
+                    self.epi_add4();
+                    self.register[modrm.rm as usize] += value;
+                } else if modrm.opcode == 5 {
+                    let reg_name = self.register_name(modrm.rm);
+                    let value = self.code32(0);
+                    println!("sub {},{}", reg_name, value);
+                    self.epi_add4();
+                    self.register[modrm.rm as usize] -= value;
+                } else {
+                    println!("unknown sub opcode: {}", modrm.opcode);
+                    println!("break");
+                    break;
+                }
+            } else if code == 0x83 {
+                let modrm_code = self.code8(0);
                 self.epi_inc();
-                let temp = self.register[modrm.rm as usize] as i32;
-                self.register[modrm.rm as usize] = (temp - value) as u32;
+
+                let modrm = self.read_modrm(modrm_code);
+                println!("opcode: {}", modrm.opcode);
+                if modrm.opcode == 0 {
+                    let reg_name = self.register_name(modrm.rm);
+                    let value = self.sign_code8(0);
+                    println!("add {},{}", reg_name, value);
+                    self.epi_inc();
+                    let temp = self.register[modrm.rm as usize] as i32;
+                    self.register[modrm.rm as usize] = (temp + value) as u32;
+                } else if modrm.opcode == 5 {
+                    let reg_name = self.register_name(modrm.rm);
+                    let value = self.sign_code8(0);
+                    println!("sub {},{}", reg_name, value);
+                    self.epi_inc();
+                    let temp = self.register[modrm.rm as usize] as i32;
+                    self.register[modrm.rm as usize] = (temp - value) as u32;
+                } else {
+                    println!("unknown sub opcode: {}", modrm.opcode);
+                    println!("break");
+                    break;
+                }
             } else if code == 0xe8 {
                 // call
                 let value = self.code32(0);
@@ -243,6 +283,7 @@ impl Emulator {
                 println!("break");
                 break;
             }
+            println!("---");
         }
     }
 
