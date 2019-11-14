@@ -189,6 +189,11 @@ impl Emulator {
         self.register[reg as usize] -= self.mem_get32(address);
     }
 
+    fn mov_r32_rm32(&mut self) {
+        let (reg, address) = self.read_effective_address();
+        self.register[reg as usize] = self.mem_get32(address);
+    }
+
     pub fn launch(&mut self) {
         loop {
             println!("EIP: {:08X}", self.eip);
@@ -280,9 +285,7 @@ impl Emulator {
                     break;
                 }
             } else if code == 0x8b {
-                // mov
-                let (reg, address) = self.read_effective_address();
-                self.register[reg as usize] = self.mem_get32(address);
+                self.mov_r32_rm32();
             } else if code == 0xe8 {
                 // call
                 let value = self.code32(0);
