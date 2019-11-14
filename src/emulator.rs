@@ -194,6 +194,16 @@ impl Emulator {
         self.push32(value as u32);
     }
 
+    fn pop_r32(&mut self, code: u32) {
+        let reg = code - 0x58;
+        let reg_name = self.register_name(reg);
+        println!("reg: {}", reg_name);
+        println!("pop {}", reg_name);
+        let value = self.pop32();
+        println!("value: {:X}", value);
+        self.register[reg as usize] = value;
+    }
+
     fn opcode81(&mut self) {
         let modrm_code = self.code8(0);
         self.epi_inc();
@@ -318,13 +328,7 @@ impl Emulator {
             } else if (0x50 <= code) && (code <= (0x50 + 7)) {
                 self.push_r32(code);
             } else if (0x58 <= code) && (code <= (0x58 + 7)) {
-                let reg = code - 0x58;
-                let reg_name = self.register_name(reg);
-                println!("reg: {}", reg_name);
-                println!("pop {}", reg_name);
-                let value = self.pop32();
-                println!("value: {:X}", value);
-                self.register[reg as usize] = value;
+                self.pop_r32(code);
             } else if code == 0x6a {
                 self.push_imm8();
             } else if code == 0x81 {
