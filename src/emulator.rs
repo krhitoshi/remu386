@@ -184,6 +184,11 @@ impl Emulator {
         self.register[reg as usize] += self.mem_get32(address);
     }
 
+    fn sub_r32_rm32(&mut self) {
+        let (reg, address) = self.read_effective_address();
+        self.register[reg as usize] -= self.mem_get32(address);
+    }
+
     pub fn launch(&mut self) {
         loop {
             println!("EIP: {:08X}", self.eip);
@@ -199,9 +204,7 @@ impl Emulator {
                 self.register[Register::EAX as usize] += value;
                 self.epi_add4();
             } else if code == 0x2b {
-                // sub
-                let (reg, address) = self.read_effective_address();
-                self.register[reg as usize] -= self.mem_get32(address);
+                self.sub_r32_rm32();
              } else if code == 0x2d {
                 // sub, EAX
                 let value = self.code32(0);
