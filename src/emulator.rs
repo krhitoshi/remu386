@@ -107,13 +107,11 @@ impl Emulator {
     }
 
     fn code8(&self, index: u32) -> u32 {
-        let address = (self.eip + index) as usize;
-        return self.memory[address].into();
+        return self.memory(self.eip + index).into();
     }
 
     fn sign_code8(&self, index: u32) -> i32 {
-        let address = (self.eip + index) as usize;
-        let value = self.memory[address] as i8;
+        let value = self.memory(self.eip + index) as i8;
         return value.into();
     }
 
