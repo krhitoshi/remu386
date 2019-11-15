@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::Read;
+use std::error::Error;
 
 use Register::*;
 
@@ -40,7 +41,11 @@ impl Emulator {
     }
 
     pub fn load_memory(&mut self, mut file: &File) {
-        file.read(&mut self.memory);
+        let size = match file.read(&mut self.memory) {
+            Err(why) => panic!("couldn't read binary file: {}", why.description()),
+            Ok(size) => size,
+        };
+        println!("load_memory size: {} B", size);
     }
 
     fn esp(&self) -> u32 {
