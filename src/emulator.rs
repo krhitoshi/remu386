@@ -1,7 +1,3 @@
-use std::fs::File;
-use std::io::Read;
-use std::error::Error;
-
 use Register::*;
 
 // 1MB 0x00000 - 0xfffff
@@ -13,7 +9,7 @@ enum Register {
 }
 
 pub struct Emulator {
-    memory: [u8; MEMORY_SIZE as usize],
+    pub memory: [u8; MEMORY_SIZE as usize],
     eip: u32,
     register: [u32; 8]
 }
@@ -38,14 +34,6 @@ impl Emulator {
         emu.register[ESP as usize] = MEMORY_SIZE - 4;
 
         return emu;
-    }
-
-    pub fn load_memory(&mut self, mut file: &File) {
-        let size = match file.read(&mut self.memory) {
-            Err(why) => panic!("couldn't read binary file: {}", why.description()),
-            Ok(size) => size,
-        };
-        println!("load_memory size: {} B", size);
     }
 
     fn esp(&self) -> u32 {

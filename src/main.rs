@@ -1,6 +1,7 @@
 use std::env;
 use std::error::Error;
 use std::fs::File;
+use std::io::Read;
 use std::path::Path;
 
 mod emulator;
@@ -19,7 +20,13 @@ fn main() {
         Ok(f) => f,
     };
 
-    emu.load_memory(&mut f);
+    let size = match f.read(&mut emu.memory) {
+        Err(why) => panic!("couldn't read binary file: {}", why.description()),
+        Ok(size) => size,
+    };
+    println!("loaded memory size: {} B", size);
+
+    // emu.load_memory(&mut f);
     emu.launch();
     emu.dump_register();
     emu.dump_memory();
