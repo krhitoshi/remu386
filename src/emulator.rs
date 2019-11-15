@@ -106,7 +106,7 @@ impl Emulator {
         for i in 0..4 {
             let temp = self.memory(address + i) as u32;
             // println!("hex: {:02X}", temp);
-            value += (temp << 8 * i);
+            value += temp << 8 * i;
         }
         // println!("value: {:08X}", value);
 
