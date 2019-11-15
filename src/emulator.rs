@@ -75,7 +75,7 @@ impl Emulator {
 
     fn push32(&mut self, value: u32) {
         self.esp_sub4();
-        self.mem_set32(self.esp(), value);
+        self.memory_set32(self.esp(), value);
     }
 
     fn pop32(&mut self) -> u32 {
@@ -88,7 +88,7 @@ impl Emulator {
         self.memory[address as usize] = value;
     }
 
-    fn mem_set32(&mut self, address: u32, value: u32) {
+    fn memory_set32(&mut self, address: u32, value: u32) {
         // println!("address: {:08X}", address);
         // println!("value: {:08X}", value);
         for i in 0..4 {
@@ -190,7 +190,7 @@ impl Emulator {
         let reg_name = self.register_name(reg);
         println!("push {}", reg_name);
         self.esp_sub4();
-        self.mem_set32(self.esp(), self.register[reg as usize]);
+        self.memory_set32(self.esp(), self.register[reg as usize]);
     }
 
     fn push_imm8(&mut self) {
