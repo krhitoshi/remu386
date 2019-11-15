@@ -65,6 +65,10 @@ impl Emulator {
         return self.memory[(address) as usize];
     }
 
+    fn memory_i8(&self, address: u32) -> i8 {
+        return self.memory(address) as i8;
+    }
+
     fn register_name(&self, index: u32) -> &str {
         return REGISTER_NAME[index as usize];
     }
@@ -111,8 +115,7 @@ impl Emulator {
     }
 
     fn sign_code8(&self, index: u32) -> i32 {
-        let value = self.memory(self.eip + index) as i8;
-        return value.into();
+        return self.memory_i8(self.eip + index).into();
     }
 
     fn code32(&self, index: u32) -> u32 {
