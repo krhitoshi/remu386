@@ -61,6 +61,10 @@ impl Emulator {
         self.eip += 1;
     }
 
+    fn register(&self, index: u32) -> u32 {
+        return self.register[index as usize];
+    }
+
     fn memory(&self, address: u32) -> u8 {
         return self.memory[(address) as usize];
     }
@@ -177,7 +181,7 @@ impl Emulator {
             self.epi_inc();
             let reg_name2 = self.register_name(modrm.rm);
             println!("rm: {},", reg_name2);
-            let temp = self.register[modrm.rm as usize] as i32;
+            let temp = self.register(modrm.rm) as i32;
             let address = (temp + disp) as u32;
             return (modrm.reg, address);
         } else {
@@ -190,7 +194,7 @@ impl Emulator {
         let reg_name = self.register_name(reg);
         println!("push {}", reg_name);
         self.esp_sub4();
-        self.memory_set32(self.esp(), self.register[reg as usize]);
+        self.memory_set32(self.esp(), self.register(reg));
     }
 
     fn push_imm8(&mut self) {
@@ -222,7 +226,7 @@ impl Emulator {
         let value = self.sign_code8(0);
         println!("add {},{}", reg_name, value);
         self.epi_inc();
-        let temp = self.register[modrm.rm as usize] as i32;
+        let temp = self.register(modrm.rm) as i32;
         self.register[modrm.rm as usize] = (temp + value) as u32;
     }
 
@@ -239,7 +243,7 @@ impl Emulator {
         let value = self.sign_code8(0);
         println!("sub {},{}", reg_name, value);
         self.epi_inc();
-        let temp = self.register[modrm.rm as usize] as i32;
+        let temp = self.register(modrm.rm) as i32;
         self.register[modrm.rm as usize] = (temp - value) as u32;
     }
 
@@ -313,7 +317,7 @@ impl Emulator {
         if modrm.mode == 0b11 {
             let reg_name2 = self.register_name(modrm.rm);
             println!("mov {},{}", reg_name2, reg_name1);
-            self.register[modrm.rm as usize] = self.register[modrm.reg as usize];
+            self.register[modrm.rm as usize] = self.register(modrm.reg);
         } else {
             println!("unknown Mod");
             panic!("break");
