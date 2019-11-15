@@ -84,14 +84,17 @@ impl Emulator {
         return value;
     }
 
+    fn memory_set8(&mut self, address: u32, value: u8) {
+        self.memory[address as usize] = value;
+    }
+
     fn mem_set32(&mut self, address: u32, value: u32) {
         // println!("address: {:08X}", address);
         // println!("value: {:08X}", value);
         for i in 0..4 {
             let mask = 0xff << 8*i;
-            let temp = (value & mask) >> 8*i;
-            let offset = (address + i) as usize;
-            self.memory[offset] = temp as u8;
+            let data = (value & mask) >> 8*i;
+            self.memory_set8(address + i, data as u8);
             // println!("hex: {:02X}", temp);
         }
     }
