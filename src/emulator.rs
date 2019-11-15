@@ -1,6 +1,8 @@
 use std::fs::File;
 use std::io::Read;
 
+use Register::*;
+
 // 1MB 0x00000 - 0xfffff
 pub const MEMORY_SIZE: u32 = 1024 * 1024;
 
@@ -32,7 +34,7 @@ impl Emulator {
             eip: 0,
             register: [0; 8]
         };
-        emu.register[Register::ESP as usize] = MEMORY_SIZE - 4;
+        emu.register[ESP as usize] = MEMORY_SIZE - 4;
 
         return emu;
     }
@@ -42,15 +44,15 @@ impl Emulator {
     }
 
     fn esp(&self) -> u32 {
-        return self.register[Register::ESP as usize];
+        return self.register[ESP as usize];
     }
 
     fn esp_add4(&mut self) {
-        self.register[Register::ESP as usize] += 4;
+        self.register[ESP as usize] += 4;
     }
 
     fn esp_sub4(&mut self) {
-        self.register[Register::ESP as usize] -= 4;
+        self.register[ESP as usize] -= 4;
     }
 
     fn epi_add4(&mut self) {
@@ -274,7 +276,7 @@ impl Emulator {
     fn add_eax_imm32(&mut self) {
         let value = self.code32(0);
         println!("add EAX,{:08X}", value);
-        self.register[Register::EAX as usize] += value;
+        self.register[EAX as usize] += value;
         self.epi_add4();
     }
 
@@ -286,7 +288,7 @@ impl Emulator {
     fn sub_eax_imm32(&mut self) {
         let value = self.code32(0);
         println!("sub EAX,{:08X}", value);
-        self.register[Register::EAX as usize] -= value;
+        self.register[EAX as usize] -= value;
         self.epi_add4();
     }
 
