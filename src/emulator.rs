@@ -79,7 +79,7 @@ impl Emulator {
     }
 
     fn pop32(&mut self) -> u32 {
-        let value = self.memory_get32(self.esp());
+        let value = self.memory_u32(self.esp());
         self.esp_add4();
         return value;
     }
@@ -99,7 +99,7 @@ impl Emulator {
         }
     }
 
-    fn memory_get32(&self, address: u32) -> u32 {
+    fn memory_u32(&self, address: u32) -> u32 {
         // println!("address: {:08X}", address);
         let mut value: u32 = 0;
 
@@ -276,7 +276,7 @@ impl Emulator {
 
     fn add_r32_rm32(&mut self) {
         let (reg, address) = self.read_effective_address();
-        self.register[reg as usize] += self.memory_get32(address);
+        self.register[reg as usize] += self.memory_u32(address);
     }
 
     fn sub_eax_imm32(&mut self) {
@@ -288,12 +288,12 @@ impl Emulator {
 
     fn sub_r32_rm32(&mut self) {
         let (reg, address) = self.read_effective_address();
-        self.register[reg as usize] -= self.memory_get32(address);
+        self.register[reg as usize] -= self.memory_u32(address);
     }
 
     fn mov_r32_rm32(&mut self) {
         let (reg, address) = self.read_effective_address();
-        self.register[reg as usize] = self.memory_get32(address);
+        self.register[reg as usize] = self.memory_u32(address);
     }
 
     fn mov_r32_imm32(&mut self, code: u32) {
