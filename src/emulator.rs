@@ -61,6 +61,10 @@ impl Emulator {
         self.eip += 1;
     }
 
+    fn memory(&self, address: u32) -> u8 {
+        return self.memory[(address) as usize];
+    }
+
     fn register_name(&self, index: u32) -> &str {
         return REGISTER_NAME[index as usize];
     }
@@ -93,7 +97,7 @@ impl Emulator {
         let mut value: u32 = 0;
 
         for i in 0..4 {
-            let temp = self.memory[(address + i) as usize] as u32;
+            let temp = self.memory(address + i) as u32;
             // println!("hex: {:02X}", temp);
             value += (temp << 8 * i);
         }
