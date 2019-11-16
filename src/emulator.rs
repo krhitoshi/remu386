@@ -190,6 +190,12 @@ impl Emulator {
         }
     }
 
+    fn leave(&mut self) {
+        println!("leave");
+        self.register[ESP as usize] = self.register[EBP as usize];
+        self.register[EBP as usize] = self.pop32();
+    }
+
     fn jump_short(&mut self) {
         let value = self.sign_code8(0);
         let mut address = self.eip as i32;
@@ -455,9 +461,7 @@ impl Emulator {
             } else if code == 0x8b {
                 self.mov_r32_rm32();
             } else if code == 0xc9 {
-                println!("leave");
-                self.register[ESP as usize] = self.register[EBP as usize];
-                self.register[EBP as usize] = self.pop32();
+                self.leave();
             } else if code == 0xc7 {
                 let (_reg, address) = self.read_effective_address();
                 let value = self.code32(0);
