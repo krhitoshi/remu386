@@ -11,7 +11,8 @@ enum Register {
 pub struct Emulator {
     pub memory: [u8; MEMORY_SIZE as usize],
     eip: u32,
-    register: [u32; 8]
+    register: [u32; 8],
+    eflags: u32
 }
 
 struct ModRM {
@@ -29,7 +30,8 @@ impl Emulator {
         let mut emu = Emulator {
             memory: [0; MEMORY_SIZE as usize],
             eip: 0,
-            register: [0; 8]
+            register: [0; 8],
+            eflags: 0
         };
         emu.register[ESP as usize] = MEMORY_SIZE - 4;
 
@@ -270,6 +272,19 @@ impl Emulator {
             self.add_rm32_imm8(modrm);
         } else if modrm.opcode == 5 {
             self.sub_rm32_imm8(modrm);
+        } else if modrm.opcode == 7 {
+            let value = self.code8(0);
+            self.epi_inc();
+            let reg_name = self.register_name(modrm.rm);
+            println!("cmp {},{}", reg_name, value);
+            println!("eflags = {:032b}", self.eflags);
+            let reg_value = self.register[modrm.rm as usize];
+            if reg_value == value {
+                self.eflags |= 0b1000000;
+            } else {
+                self.eflags &= 0b11111111111111111111111110111111;
+            }
+            println!("eflags = {:032b}", self.eflags);
         } else {
             panic!("unknown sub opcode: {}", modrm.opcode);
         }
@@ -355,6 +370,17 @@ impl Emulator {
                 self.pop_r32(code);
             } else if code == 0x6a {
                 self.push_imm8();
+            } else if code == 0x74 {
+                let value = self.sign_code8(0);
+                self.epi_inc();
+                println!("jz {:08X}", value);
+                println!("eflags = {:032b}", self.eflags);
+                if (self.eflags & 0b1000000) == 0b1000000 {
+                    let mut address = self.eip as i32;
+                    address += value;
+                    println!("jmp => {:08X}", address);
+                    self.eip = address as u32;
+                };
             } else if code == 0x81 {
                 self.opcode81();
             } else if code == 0x83 {
