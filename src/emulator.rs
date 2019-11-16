@@ -352,6 +352,13 @@ impl Emulator {
                 self.opcode83();
             } else if code == 0x8b {
                 self.mov_r32_rm32();
+            } else if code == 0xeb {
+                let value = self.sign_code8(0);
+                let mut address = self.eip as i32;
+                println!("jmp short, {:08X}", value);
+                address += value + 1;
+                println!("jmp => {:08X}", address);
+                self.eip = address as u32;
             } else if code == 0xe8 {
                 self.call_rel32();
             } else if (0xb8 <= code) && (code <= (0xb8 + 7)) {
