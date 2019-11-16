@@ -184,6 +184,15 @@ impl Emulator {
         }
     }
 
+    fn jump_short(&mut self) {
+        let value = self.sign_code8(0);
+        let mut address = self.eip as i32;
+        println!("jmp short, {:08X}, {}", value, value);
+        address += value + 1;
+        println!("jmp => {:08X}", address);
+        self.eip = address as u32;
+    }
+
     fn push_r32(&mut self, code: u32) {
         let reg = code - 0x50;
         let reg_name = self.register_name(reg);
@@ -353,12 +362,7 @@ impl Emulator {
             } else if code == 0x8b {
                 self.mov_r32_rm32();
             } else if code == 0xeb {
-                let value = self.sign_code8(0);
-                let mut address = self.eip as i32;
-                println!("jmp short, {:08X}", value);
-                address += value + 1;
-                println!("jmp => {:08X}", address);
-                self.eip = address as u32;
+                self.jump_short();
             } else if code == 0xe8 {
                 self.call_rel32();
             } else if (0xb8 <= code) && (code <= (0xb8 + 7)) {
