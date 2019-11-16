@@ -299,9 +299,16 @@ impl Emulator {
         let reg_name = self.register_name(modrm.rm);
         println!("cmp {},{}", reg_name, value);
         println!("eflags = {:032b}", self.eflags);
-        let mut result = self.register[modrm.rm as usize] as u32;
-        result = result.wrapping_sub(value);
+        let unsign_register = self.register[modrm.rm as usize] as u32;
+        let (result, carry_flag) = unsign_register.overflowing_sub(value);
         println!("result {}, {:08X}", result, result);
+        // CF: Carry Flag
+        if carry_flag {
+            println!("carry flag");
+            self.eflags |= 1;
+        } else {
+            self.eflags &= !1;
+        }
         // ZF: Zero Flag
         if result == 0 {
             println!("zero flag");
@@ -323,14 +330,6 @@ impl Emulator {
             self.eflags |= 1 << 11;
         } else {
             self.eflags &= !(1 << 11);
-        }
-        // CF: Carry Flag
-        let unsign_register = self.register[modrm.rm as usize] as u32;
-        if unsign_register.checked_sub(value) == None {
-            println!("carry flag");
-            self.eflags |= 1;
-        } else {
-            self.eflags &= !1;
         }
         println!("eflags = {:032b}", self.eflags);
     }
