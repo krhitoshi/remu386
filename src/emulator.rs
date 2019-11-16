@@ -294,7 +294,6 @@ impl Emulator {
 
     fn cmp_rm32_imm8(&mut self, modrm: ModRM) {
         let value = self.code8(0) as u32;
-        let unsign_value = self.code8(0) as u32;
         let sign_value = self.sign_code8(0) as i32;
         self.epi_inc();
         let reg_name = self.register_name(modrm.rm);
@@ -318,16 +317,16 @@ impl Emulator {
             self.eflags &= !(1 << 7);
         }
         // OF: Overflow Flag
-        let sign_result = self.register[modrm.rm as usize] as i32;
-        if sign_result.checked_sub(sign_value) == None {
+        let sign_register = self.register[modrm.rm as usize] as i32;
+        if sign_register.checked_sub(sign_value) == None {
             println!("overflow flag");
             self.eflags |= 1 << 11;
         } else {
             self.eflags &= !(1 << 11);
         }
         // CF: Carry Flag
-        let unsign_result = self.register[modrm.rm as usize] as u32;
-        if unsign_result.checked_sub(unsign_value) == None {
+        let unsign_register = self.register[modrm.rm as usize] as u32;
+        if unsign_register.checked_sub(value) == None {
             println!("carry flag");
             self.eflags |= 1;
         } else {
