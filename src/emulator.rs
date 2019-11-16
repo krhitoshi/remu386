@@ -273,12 +273,21 @@ impl Emulator {
     }
 
     fn sub_rm32_imm8(&mut self, modrm: ModRM) {
-        let reg_name = self.register_name(modrm.rm);
-        let value = self.sign_code8(0);
-        println!("sub {},{}", reg_name, value);
-        self.epi_inc();
-        let temp = self.register(modrm.rm) as i32;
-        self.register[modrm.rm as usize] = (temp - value) as u32;
+        if modrm.mode == 0b01 {
+            let (_reg, address) = self.read_effective_address_from_modrm(modrm);
+            let value = self.sign_code8(0);
+            println!("sub [{:08X}],{}", address, value);
+            self.epi_inc();
+            let temp = self.memory_u32(address) as i32;
+            self.memory_set32(address, (temp - value) as u32);
+        } else if modrm.mode == 0b11 {
+            let reg_name = self.register_name(modrm.rm);
+            let value = self.sign_code8(0);
+            println!("sub {},{}", reg_name, value);
+            self.epi_inc();
+            let temp = self.register(modrm.rm) as i32;
+            self.register[modrm.rm as usize] = (temp - value) as u32;
+        }
     }
 
     fn opcode81(&mut self) {
