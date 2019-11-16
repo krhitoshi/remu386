@@ -238,12 +238,23 @@ impl Emulator {
     }
 
     fn add_rm32_imm8(&mut self, modrm: ModRM) {
-        let reg_name = self.register_name(modrm.rm);
-        let value = self.sign_code8(0);
-        println!("add {},{}", reg_name, value);
-        self.epi_inc();
-        let temp = self.register(modrm.rm) as i32;
-        self.register[modrm.rm as usize] = (temp + value) as u32;
+        if modrm.mode == 0b01 {
+            let (_reg, address) = self.read_effective_address_from_modrm(modrm);
+            let value = self.sign_code8(0);
+            println!("add [{:08X}],{}", address, value);
+            self.epi_inc();
+            let temp = self.memory_u32(address) as i32;
+            self.memory_set32(address, (temp + value) as u32);
+        } else if modrm.mode == 0b11 {
+            let reg_name = self.register_name(modrm.rm);
+            let value = self.sign_code8(0);
+            println!("add {},{}", reg_name, value);
+            self.epi_inc();
+            let temp = self.register(modrm.rm) as i32;
+            self.register[modrm.rm as usize] = (temp + value) as u32;
+        } else {
+            panic!();
+        }
     }
 
     fn sub_rm32_imm32(&mut self, modrm: ModRM) {
@@ -328,6 +339,8 @@ impl Emulator {
             print!("cmp {},", reg_name);
             unsign_register = self.register[modrm.rm as usize] as u32;
             sign_register = self.register[modrm.rm as usize] as i32;
+        } else {
+            panic!();
         }
         let value = self.code8(0) as u32;
         let sign_value = self.sign_code8(0) as i32;
