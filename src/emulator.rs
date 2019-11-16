@@ -290,6 +290,19 @@ impl Emulator {
         }
     }
 
+    fn jz_rel8(&mut self) {
+        let value = self.sign_code8(0);
+        self.epi_inc();
+        println!("jz {:08X}", value);
+        println!("eflags = {:032b}", self.eflags);
+        if (self.eflags & 0b1000000) == 0b1000000 {
+            let mut address = self.eip as i32;
+            address += value;
+            println!("jmp => {:08X}", address);
+            self.eip = address as u32;
+        };
+    }
+
     fn add_eax_imm32(&mut self) {
         let value = self.code32(0);
         println!("add EAX,{:08X}", value);
@@ -371,16 +384,7 @@ impl Emulator {
             } else if code == 0x6a {
                 self.push_imm8();
             } else if code == 0x74 {
-                let value = self.sign_code8(0);
-                self.epi_inc();
-                println!("jz {:08X}", value);
-                println!("eflags = {:032b}", self.eflags);
-                if (self.eflags & 0b1000000) == 0b1000000 {
-                    let mut address = self.eip as i32;
-                    address += value;
-                    println!("jmp => {:08X}", address);
-                    self.eip = address as u32;
-                };
+                self.jz_rel8();
             } else if code == 0x81 {
                 self.opcode81();
             } else if code == 0x83 {
