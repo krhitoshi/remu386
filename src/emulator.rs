@@ -163,8 +163,8 @@ impl Emulator {
         let rm_mask = 0b00000111;
         modrm.rm = code & rm_mask;
 
-        println!("Mod: {:02b}, REG: {:03b}, R/M: {:03b}",
-                 modrm.mode, modrm.reg, modrm.rm);
+        println!("Mod: {:02b}, REG: {:03b} (opcode: {}), R/M: {:03b}",
+                 modrm.mode, modrm.reg, modrm.opcode, modrm.rm);
         return modrm;
     }
 
@@ -283,7 +283,6 @@ impl Emulator {
 
     fn opcode81(&mut self) {
         let modrm = self.read_modrm();
-        println!("opcode: {}", modrm.opcode);
         if modrm.opcode == 0 {
             self.add_rm32_imm32(modrm);
         } else if modrm.opcode == 5 {
@@ -295,7 +294,6 @@ impl Emulator {
 
     fn opcode83(&mut self) {
         let modrm = self.read_modrm();
-        println!("opcode: {}", modrm.opcode);
         if modrm.opcode == 0 {
             self.add_rm32_imm8(modrm);
         } else if modrm.opcode == 5 {
@@ -452,6 +450,18 @@ impl Emulator {
         self.epi_add4();
     }
 
+    fn mov_rm32_imm32(&mut self) {
+        let (opcode, address) = self.read_effective_address();
+        if opcode == 0 {
+            let value = self.code32(0);
+            println!("mov [{:08X}],{:08X}", address, value);
+            self.epi_add4();
+            self.memory_set32(address, value);
+        } else {
+            panic!("unknown opcode: {}", opcode);
+        }
+    }
+
     fn mov_rm32_r32(&mut self) {
         let modrm = self.read_modrm();
 
@@ -513,11 +523,7 @@ impl Emulator {
             } else if code == 0xc9 {
                 self.leave();
             } else if code == 0xc7 {
-                let (_reg, address) = self.read_effective_address();
-                let value = self.code32(0);
-                println!("mov [{:08X}],{:08X}", address, value);
-                self.epi_add4();
-                self.memory_set32(address, value);
+                self.mov_rm32_imm32();
             } else if code == 0xeb {
                 self.jump_short();
             } else if code == 0xe8 {
