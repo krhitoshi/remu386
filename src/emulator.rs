@@ -420,16 +420,22 @@ impl Emulator {
                 self.opcode81();
             } else if code == 0x83 {
                 self.opcode83();
+            } else if code == 0x89 {
+                self.mov_rm32_r32();
             } else if code == 0x8b {
                 self.mov_r32_rm32();
+            } else if code == 0xc7 {
+                let (_reg, address) = self.read_effective_address();
+                let value = self.code32(0);
+                println!("mov [{:08X}],{:08X}", address, value);
+                self.epi_add4();
+                self.memory_set32(address, value);
             } else if code == 0xeb {
                 self.jump_short();
             } else if code == 0xe8 {
                 self.call_rel32();
             } else if (0xb8 <= code) && (code <= (0xb8 + 7)) {
                 self.mov_r32_imm32(code);
-            } else if code == 0x89 {
-                self.mov_rm32_r32();
             } else if code == 0xc3 {
                 println!("ret");
                 let address = self.pop32();
