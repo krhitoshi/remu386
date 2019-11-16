@@ -294,6 +294,7 @@ impl Emulator {
 
     fn cmp_rm32_imm8(&mut self, modrm: ModRM) {
         let value = self.code8(0) as i64;
+        let sign_value = self.sign_code8(0) as i32;
         self.epi_inc();
         let reg_name = self.register_name(modrm.rm);
         println!("cmp {},{}", reg_name, value);
@@ -303,15 +304,23 @@ impl Emulator {
         println!("result {}", result);
         // ZF: Zero Flag
         if result == 0 {
-            self.eflags |= 0b1000000;
+            self.eflags |= 1 << 6;
         } else {
-            self.eflags &= 0b11111111111111111111111110111111;
+            self.eflags &= !(1 << 6);
         }
         // SF: Sign Flag
-        if (result & 0b10000000000000000000000000000000) == 0b10000000000000000000000000000000 {
-            self.eflags |= 0b10000000;
+        if (result >> 31) == 1 {
+            self.eflags |= 1 << 7;
         } else {
-            self.eflags &= 0b11111111111111111111111101111111;
+            self.eflags &= !(1 << 7);
+        }
+        // OF: Overflow Flag
+        let sign_result = self.register[modrm.rm as usize] as i32;
+        if sign_result.checked_sub(sign_value) == None {
+            println!("overflow");
+            self.eflags |= 1 << 11;
+        } else {
+            self.eflags &= !(1 << 11);
         }
         println!("eflags = {:032b}", self.eflags);
     }
