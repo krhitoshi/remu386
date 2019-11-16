@@ -293,23 +293,26 @@ impl Emulator {
     }
 
     fn cmp_rm32_imm8(&mut self, modrm: ModRM) {
-        let value = self.code8(0) as i64;
+        let value = self.code8(0) as u32;
+        let unsign_value = self.code8(0) as u32;
         let sign_value = self.sign_code8(0) as i32;
         self.epi_inc();
         let reg_name = self.register_name(modrm.rm);
         println!("cmp {},{}", reg_name, value);
         println!("eflags = {:032b}", self.eflags);
-        let mut result = self.register[modrm.rm as usize] as i64;
-        result -= value;
-        println!("result {}", result);
+        let mut result = self.register[modrm.rm as usize] as u32;
+        result = result.wrapping_sub(value);
+        println!("result {}, {:08X}", result, result);
         // ZF: Zero Flag
         if result == 0 {
+            println!("zero flag");
             self.eflags |= 1 << 6;
         } else {
             self.eflags &= !(1 << 6);
         }
         // SF: Sign Flag
         if (result >> 31) == 1 {
+            println!("sign flag");
             self.eflags |= 1 << 7;
         } else {
             self.eflags &= !(1 << 7);
@@ -317,10 +320,18 @@ impl Emulator {
         // OF: Overflow Flag
         let sign_result = self.register[modrm.rm as usize] as i32;
         if sign_result.checked_sub(sign_value) == None {
-            println!("overflow");
+            println!("overflow flag");
             self.eflags |= 1 << 11;
         } else {
             self.eflags &= !(1 << 11);
+        }
+        // CF: Carry Flag
+        let unsign_result = self.register[modrm.rm as usize] as u32;
+        if unsign_result.checked_sub(unsign_value) == None {
+            println!("carry flag");
+            self.eflags |= 1;
+        } else {
+            self.eflags &= !1;
         }
         println!("eflags = {:032b}", self.eflags);
     }
