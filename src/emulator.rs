@@ -170,6 +170,10 @@ impl Emulator {
 
     fn read_effective_address(&mut self) -> (u32, u32) {
         let modrm = self.read_modrm();
+        return self.read_effective_address_from_modrm(modrm);
+    }
+
+    fn read_effective_address_from_modrm(&mut self, modrm: ModRM) -> (u32, u32) {
         if modrm.mode == 0b01 {
             if modrm.rm == 0b100 {
                 panic!("not implemented ModR/M rm: 100");
@@ -293,13 +297,25 @@ impl Emulator {
     }
 
     fn cmp_rm32_imm8(&mut self, modrm: ModRM) {
+        let mut unsign_register: u32 = 0;
+        let mut sign_register: i32 = 0;
+        if modrm.mode == 0b01 {
+            let (_reg, address) = self.read_effective_address_from_modrm(modrm);
+            print!("cmp [{:08X}],", address);
+            unsign_register = self.memory_u32(address) as u32;
+            sign_register = self.memory_u32(address) as i32;
+        } else if modrm.mode == 0b11 {
+            let reg_name = self.register_name(modrm.rm);
+            print!("cmp {},", reg_name);
+            unsign_register = self.register[modrm.rm as usize] as u32;
+            sign_register = self.register[modrm.rm as usize] as i32;
+        }
         let value = self.code8(0) as u32;
         let sign_value = self.sign_code8(0) as i32;
         self.epi_inc();
-        let reg_name = self.register_name(modrm.rm);
-        println!("cmp {},{}", reg_name, value);
+        println!("{}", value);
         println!("eflags = {:032b}", self.eflags);
-        let unsign_register = self.register[modrm.rm as usize] as u32;
+
         let (result, carry_flag) = unsign_register.overflowing_sub(value);
         println!("result {}, {:08X}", result, result);
         // CF: Carry Flag
@@ -324,7 +340,6 @@ impl Emulator {
             self.eflags &= !(1 << 7);
         }
         // OF: Overflow Flag
-        let sign_register = self.register[modrm.rm as usize] as i32;
         if sign_register.checked_sub(sign_value) == None {
             println!("overflow flag");
             self.eflags |= 1 << 11;
