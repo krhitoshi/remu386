@@ -196,6 +196,13 @@ impl Emulator {
         self.register[EBP as usize] = self.pop32();
     }
 
+    fn jump(&mut self, value: i32) {
+        let mut address = self.eip as i32;
+        address += value;
+        println!("jmp => {:08X}", address);
+        self.eip = address as u32;
+    }
+
     fn jump_short(&mut self) {
         let value = self.sign_code8(0);
         let mut address = self.eip as i32;
@@ -318,10 +325,7 @@ impl Emulator {
         println!("jz {:08X}", value);
         println!("eflags = {:032b}", self.eflags);
         if self.is_zero() {
-            let mut address = self.eip as i32;
-            address += value;
-            println!("jmp => {:08X}", address);
-            self.eip = address as u32;
+            self.jump(value);
         };
     }
 
@@ -331,10 +335,17 @@ impl Emulator {
         println!("jnz {:08X}", value);
         println!("eflags = {:032b}", self.eflags);
         if self.is_zero() {
-            let mut address = self.eip as i32;
-            address += value;
-            println!("jmp => {:08X}", address);
-            self.eip = address as u32;
+            self.jump(value);
+        };
+    }
+
+    fn jg_rel8(&mut self) {
+        let value = self.sign_code8(0);
+        self.epi_inc();
+        println!("jg {:08X}", value);
+        println!("eflags = {:032b}", self.eflags);
+        if !self.is_zero() && (self.is_sign_flag() == self.is_overflow()) {
+            self.jump(value);
         };
     }
 
@@ -344,10 +355,7 @@ impl Emulator {
         println!("jng {:08X}", value);
         println!("eflags = {:032b}", self.eflags);
         if self.is_zero() || (self.is_sign_flag() != self.is_overflow()) {
-            let mut address = self.eip as i32;
-            address += value;
-            println!("jmp => {:08X}", address);
-            self.eip = address as u32;
+            self.jump(value);
         };
     }
 
@@ -492,6 +500,8 @@ impl Emulator {
                 self.jnz_rel8();
             } else if code == 0x7e {
                 self.jng_rel8();
+            } else if code == 0x7f {
+                self.jg_rel8();
             } else if code == 0x81 {
                 self.opcode81();
             } else if code == 0x83 {
