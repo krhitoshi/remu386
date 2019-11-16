@@ -300,12 +300,24 @@ impl Emulator {
         }
     }
 
+    fn is_zero(&self) -> bool {
+        return (self.eflags & 1 << 6) == 1 << 6;
+    }
+
+    fn is_sign_flag(&self) -> bool {
+        return (self.eflags & 1 << 7) == 1 << 7;
+    }
+
+    fn is_overflow(&self) -> bool {
+        return (self.eflags & 1 << 11) == 1 << 11;
+    }
+
     fn jz_rel8(&mut self) {
         let value = self.sign_code8(0);
         self.epi_inc();
         println!("jz {:08X}", value);
         println!("eflags = {:032b}", self.eflags);
-        if (self.eflags & 0b1000000) == 0b1000000 {
+        if self.is_zero() {
             let mut address = self.eip as i32;
             address += value;
             println!("jmp => {:08X}", address);
@@ -318,7 +330,20 @@ impl Emulator {
         self.epi_inc();
         println!("jnz {:08X}", value);
         println!("eflags = {:032b}", self.eflags);
-        if (self.eflags & 0b1000000) != 0b1000000 {
+        if self.is_zero() {
+            let mut address = self.eip as i32;
+            address += value;
+            println!("jmp => {:08X}", address);
+            self.eip = address as u32;
+        };
+    }
+
+    fn jng_rel8(&mut self) {
+        let value = self.sign_code8(0);
+        self.epi_inc();
+        println!("jng {:08X}", value);
+        println!("eflags = {:032b}", self.eflags);
+        if self.is_zero() || (self.is_sign_flag() != self.is_overflow()) {
             let mut address = self.eip as i32;
             address += value;
             println!("jmp => {:08X}", address);
@@ -465,6 +490,8 @@ impl Emulator {
                 self.jz_rel8();
             } else if code == 0x75 {
                 self.jnz_rel8();
+            } else if code == 0x7e {
+                self.jng_rel8();
             } else if code == 0x81 {
                 self.opcode81();
             } else if code == 0x83 {
