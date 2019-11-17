@@ -604,9 +604,13 @@ impl Emulator {
     fn mov_rm32_r32(&mut self) {
         let modrm = self.read_modrm();
 
-        let reg_name1 = self.register_name(modrm.reg);
-
-        if modrm.mode == 0b11 {
+        if modrm.mode == 0b01 {
+            let value = self.register(modrm.reg);
+            let (_reg, address) = self.read_effective_address_from_modrm(modrm);
+            print!("mov [{:08X}]", address);
+            self.memory_set32(address, value);
+        } else if modrm.mode == 0b11 {
+            let reg_name1 = self.register_name(modrm.reg);
             let reg_name2 = self.register_name(modrm.rm);
             println!("mov {},{}", reg_name2, reg_name1);
             self.register[modrm.rm as usize] = self.register(modrm.reg);
