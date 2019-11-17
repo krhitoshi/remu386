@@ -515,6 +515,7 @@ impl Emulator {
         let (reg, address) = self.read_effective_address();
         let reg_name = self.register_name(reg);
         println!("lea {},[{:08X}]", reg_name, address);
+        self.register[reg as usize] = address;
     }
 
     fn and_rm32_imm8(&mut self, modrm: ModRM) {
