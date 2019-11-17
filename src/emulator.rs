@@ -452,14 +452,19 @@ impl Emulator {
     }
 
     fn cmp_r32_rm32(&mut self) {
-        let (reg, address) = self.read_effective_address();
-        let reg_name = register_name(reg);
-        println!("cmp {},[{:08X}]", reg_name, address);
-        let target = self.register[reg as usize];
-        let value = self.memory_u32(address);
-        println!("cmp {},{}", reg_name, value);
-        println!("value: {}", value);
-        self.cmp_u32_u32(target, value)
+        let modrm = self.read_modrm();
+        if modrm.mode == 0b01 {
+            let (reg, address) = self.read_effective_address_from_modrm(modrm);
+            let reg_name = register_name(reg);
+            println!("cmp {},[{:08X}]", reg_name, address);
+            let target = self.register[reg as usize];
+            let value = self.memory_u32(address);
+            println!("cmp {},{}", reg_name, value);
+            println!("value: {}", value);
+            self.cmp_u32_u32(target, value);
+        } else {
+            unimplemented!("unknown Mod: {:02b}", modrm.mode);
+        }
     }
 
     fn cmp_rm32_imm8(&mut self, modrm: ModRM) {
