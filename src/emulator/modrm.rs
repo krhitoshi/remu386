@@ -1,3 +1,5 @@
+use super::register_name;
+
 #[derive(Debug)]
 pub struct ModRM {
     pub mode: u32,
@@ -26,15 +28,14 @@ impl ModRM {
         let rm_mask = 0b00000111;
         modrm.rm = code & rm_mask;
 
-        // let reg_name1 = self.register_name(modrm.reg);
-        // let reg_name2 = self.register_name(modrm.rm);
 
-        // println!("Mod: {:02b}, REG: {:03b} (opcode: {}, {}), R/M: {:03b} ({})",
-        //          modrm.mode, modrm.reg, modrm.opcode, reg_name1,
-        //          modrm.rm, reg_name2);
+        let reg_name1 = register_name(modrm.reg);
+        let reg_name2 = register_name(modrm.rm);
+
         println!("ModR/M: {:?}", modrm);
-        println!("Mod: {:02b}, REG: {:03b} (opcode: {}), R/M: {:03b}",
-                 modrm.mode, modrm.reg, modrm.opcode, modrm.rm);
+        println!("Mod: {:02b}, REG: {:03b} (opcode: {}, {}), R/M: {:03b} ({})",
+                 modrm.mode, modrm.reg, modrm.opcode, reg_name1,
+                 modrm.rm, reg_name2);
 
         return modrm;
     }
