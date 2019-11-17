@@ -455,45 +455,11 @@ impl Emulator {
         let (reg, address) = self.read_effective_address();
         let reg_name = register_name(reg);
         println!("cmp {},[{:08X}]", reg_name, address);
-        let unsign_register = self.register[reg as usize] as u32;
-        let sign_register = self.register[reg as usize] as i32;
-        let value = self.memory_u32(address) as u32;
-        let sign_value = self.memory_u32(address) as i32;
+        let target = self.register[reg as usize];
+        let value = self.memory_u32(address);
         println!("cmp {},{}", reg_name, value);
         println!("value: {}", value);
-        println!("eflags = {:032b}", self.eflags);
-
-        let (result, carry_flag) = unsign_register.overflowing_sub(value);
-        println!("result {}, {:08X}", result, result);
-        // CF: Carry Flag
-        if carry_flag {
-            println!("carry flag");
-            self.eflags |= 1;
-        } else {
-            self.eflags &= !1;
-        }
-        // ZF: Zero Flag
-        if result == 0 {
-            println!("zero flag");
-            self.eflags |= 1 << 6;
-        } else {
-            self.eflags &= !(1 << 6);
-        }
-        // SF: Sign Flag
-        if (result >> 31) == 1 {
-            println!("sign flag");
-            self.eflags |= 1 << 7;
-        } else {
-            self.eflags &= !(1 << 7);
-        }
-        // OF: Overflow Flag
-        if sign_register.checked_sub(sign_value) == None {
-            println!("overflow flag");
-            self.eflags |= 1 << 11;
-        } else {
-            self.eflags &= !(1 << 11);
-        }
-        println!("eflags = {:032b}", self.eflags);
+        self.cmp_u32_u32(target, value)
     }
 
     fn cmp_rm32_imm8(&mut self, modrm: ModRM) {
