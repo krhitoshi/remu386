@@ -128,6 +128,11 @@ impl Emulator {
         return self.memory_i8(self.eip + index).into();
     }
 
+    fn sign_code32(&self, index: u32) -> i32 {
+        let value = self.code32(index);
+        return value as i32;
+    }
+
     fn code32(&self, index: u32) -> u32 {
         let mut value: u32 = 0;
         let mut data: String = String::new();
@@ -621,10 +626,10 @@ impl Emulator {
     }
 
     fn call_rel32(&mut self) {
-        let value = self.code32(0);
+        let value = self.sign_code32(0);
         println!("call {:08X}", value);
         self.push32(self.eip as u32 + 4);
-        self.eip += 4 + value;
+        self.jump(4 + value);
     }
 
     pub fn launch(&mut self) {
