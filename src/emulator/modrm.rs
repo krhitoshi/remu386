@@ -28,7 +28,6 @@ impl ModRM {
         let rm_mask = 0b00000111;
         modrm.rm = code & rm_mask;
 
-
         let reg_name1 = register_name(modrm.reg);
         let reg_name2 = register_name(modrm.rm);
 

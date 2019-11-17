@@ -201,8 +201,6 @@ impl Emulator {
             } else {
                 let disp = self.sign_code8(0);
                 self.epi_inc();
-                let reg_name2 = register_name(modrm.rm);
-                println!("rm: {},", reg_name2);
                 let temp = self.register(modrm.rm) as i32;
                 let address = (temp + disp) as u32;
                 return (modrm.reg, address);
