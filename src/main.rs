@@ -12,7 +12,7 @@ fn main() {
         panic!("Usage: {} FILE", args[0])
     }
 
-    let mut emu = emulator::Emulator::new();
+    let mut emu = emulator::Emulator::new(emulator::MEMORY_SIZE);
 
     let path = Path::new(&args[1]);
     let mut f: std::fs::File = match File::open(&path) {

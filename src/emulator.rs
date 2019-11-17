@@ -31,17 +31,17 @@ fn register_name(index: u32) -> String {
 }
 
 impl Emulator {
-    pub fn new() -> Self {
+    pub fn new(mem_size: u32) -> Self {
         let mut emu = Self {
-            memory: Vec::with_capacity(MEMORY_SIZE as usize),
+            memory: Vec::with_capacity(mem_size as usize),
             eip: 0,
             register: [0; 8],
             eflags: 0
         };
-        for _i in 0..MEMORY_SIZE {
+        for _i in 0..mem_size {
             emu.memory.push(0);
         }
-        emu.register[ESP as usize] = MEMORY_SIZE - 4;
+        emu.register[ESP as usize] = mem_size - 4;
 
         return emu;
     }
