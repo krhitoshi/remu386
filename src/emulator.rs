@@ -139,7 +139,7 @@ impl Emulator {
 
         for i in 0..4 {
             let mut temp = self.code8(index + i);
-            let str = format!("{:2X}", temp);
+            let str = format!("{:02X} ", temp);
             data.push_str(&str);
             // println!("hex: {:2X}", temp);
             // println!("bin: {:032b}", temp);
@@ -267,8 +267,9 @@ impl Emulator {
     fn push_rm32(&mut self, modrm: ModRM) {
         if modrm.mode == 0b01 {
             let (_reg, address) = self.read_effective_address_from_modrm(modrm);
-            println!("address: {:08X}", address);
+            println!("push: [{:08X}]", address);
             let value = self.memory_u32(address);
+            println!("push: {:08X}", value);
             self.push32(value);
         } else {
             panic!();
@@ -415,7 +416,7 @@ impl Emulator {
         self.epi_inc();
         println!("jnz {:08X}", value);
         println!("eflags = {:032b}", self.eflags);
-        if self.is_zero() {
+        if !self.is_zero() {
             self.jump(value);
         };
     }
@@ -729,6 +730,7 @@ impl Emulator {
             } else {
                 panic!("unknown code: {:02X}", code);
             }
+            self.dump_register();
             println!("---");
         }
     }
