@@ -11,7 +11,7 @@ enum Register {
 }
 
 pub struct Emulator {
-    pub memory: [u8; MEMORY_SIZE as usize],
+    pub memory: Vec<u8>,
     eip: u32,
     register: [u32; 8],
     eflags: u32
@@ -33,11 +33,14 @@ fn register_name(index: u32) -> String {
 impl Emulator {
     pub fn new() -> Self {
         let mut emu = Self {
-            memory: [0; MEMORY_SIZE as usize],
+            memory: Vec::with_capacity(MEMORY_SIZE as usize),
             eip: 0,
             register: [0; 8],
             eflags: 0
         };
+        for _i in 0..MEMORY_SIZE {
+            emu.memory.push(0);
+        }
         emu.register[ESP as usize] = MEMORY_SIZE - 4;
 
         return emu;
