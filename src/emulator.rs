@@ -221,17 +221,14 @@ impl Emulator {
     fn jump(&mut self, value: i32) {
         let mut address = self.eip as i32;
         address += value;
-        println!("jmp => {:08X}", address);
+        println!("jump => {:08X}", address);
         self.eip = address as u32;
     }
 
     fn jump_short(&mut self) {
         let value = self.sign_code8(0);
-        let mut address = self.eip as i32;
         println!("jmp short, {:08X}, {}", value, value);
-        address += value + 1;
-        println!("jmp => {:08X}", address);
-        self.eip = address as u32;
+        self.jump(value + 1);
     }
 
     fn push_rm32(&mut self, modrm: ModRM) {
