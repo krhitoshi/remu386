@@ -22,6 +22,18 @@ struct ModRM {
     opcode: u32
 }
 
+impl ModRM {
+    pub fn new() -> ModRM {
+        let mut modrm = ModRM {
+            mode: 0,
+            reg: 0,
+            rm: 0,
+            opcode: 0
+        };
+        return modrm;
+    }
+}
+
 struct SIB {
     scale: u32,
     index: u32,
@@ -763,5 +775,15 @@ impl Emulator {
             let value = self.register[i];
             println!("{} = {:#010X} {}", reg_name, value, value);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ModRM;
+    #[test]
+    fn modrm_new() {
+        let mut modrm = ModRM::new();
+        assert_eq!(modrm.mode, 0);
     }
 }
