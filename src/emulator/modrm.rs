@@ -6,8 +6,8 @@ pub struct ModRM {
 }
 
 impl ModRM {
-    pub fn new(code: u32) -> ModRM {
-        let mut modrm = ModRM {
+    pub fn new(code: u32) -> Self {
+        let mut modrm = Self {
             mode: 0,
             reg: 0,
             rm: 0,

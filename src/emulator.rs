@@ -27,8 +27,8 @@ static REGISTER_NAME: [&str; 8] =
  ["EAX", "ECX", "EDX", "EBX", "ESP", "EBP", "ESI", "EDI"];
 
 impl Emulator {
-    pub fn new() -> Emulator {
-        let mut emu = Emulator {
+    pub fn new() -> Self {
+        let mut emu = Self {
             memory: [0; MEMORY_SIZE as usize],
             eip: 0,
             register: [0; 8],
