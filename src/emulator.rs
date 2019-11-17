@@ -23,8 +23,12 @@ struct SIB {
     base: u32
 }
 
-static REGISTER_NAME: [&str; 8] =
+const REGISTER_NAME: [&str; 8] =
  ["EAX", "ECX", "EDX", "EBX", "ESP", "EBP", "ESI", "EDI"];
+
+fn register_name(index: u32) -> String {
+    return REGISTER_NAME[index as usize].to_string();
+}
 
 impl Emulator {
     pub fn new() -> Self {
@@ -69,10 +73,6 @@ impl Emulator {
 
     fn memory_i8(&self, address: u32) -> i8 {
         return self.memory(address) as i8;
-    }
-
-    fn register_name(&self, index: u32) -> &str {
-        return REGISTER_NAME[index as usize];
     }
 
     fn push32(&mut self, value: u32) {
@@ -190,7 +190,7 @@ impl Emulator {
                 let disp = self.sign_code8(0);
                 self.epi_inc();
                 if sib.scale == 0 && sib.index == 0b100 {
-                    let reg_name2 = self.register_name(sib.base);
+                    let reg_name2 = register_name(sib.base);
                     println!("address: [{} {}]", reg_name2, disp);
                     let temp = self.register(sib.base) as i32;
                     let address = (temp + disp) as u32;
@@ -201,7 +201,7 @@ impl Emulator {
             } else {
                 let disp = self.sign_code8(0);
                 self.epi_inc();
-                let reg_name2 = self.register_name(modrm.rm);
+                let reg_name2 = register_name(modrm.rm);
                 println!("rm: {},", reg_name2);
                 let temp = self.register(modrm.rm) as i32;
                 let address = (temp + disp) as u32;
@@ -248,7 +248,7 @@ impl Emulator {
 
     fn push_r32(&mut self, code: u32) {
         let reg = code - 0x50;
-        let reg_name = self.register_name(reg);
+        let reg_name = register_name(reg);
         println!("push {}", reg_name);
         self.esp_sub4();
         self.memory_set32(self.esp(), self.register(reg));
@@ -263,7 +263,7 @@ impl Emulator {
 
     fn pop_r32(&mut self, code: u32) {
         let reg = code - 0x58;
-        let reg_name = self.register_name(reg);
+        let reg_name = register_name(reg);
         println!("pop {}", reg_name);
         let value = self.pop32();
         println!("value: {:X}", value);
@@ -271,7 +271,7 @@ impl Emulator {
     }
 
     fn add_rm32_imm32(&mut self, modrm: ModRM) {
-        let reg_name = self.register_name(modrm.rm);
+        let reg_name = register_name(modrm.rm);
         let value = self.code32(0);
         println!("add {},{}", reg_name, value);
         self.epi_add4();
@@ -287,7 +287,7 @@ impl Emulator {
             let temp = self.memory_u32(address) as i32;
             self.memory_set32(address, (temp + value) as u32);
         } else if modrm.mode == 0b11 {
-            let reg_name = self.register_name(modrm.rm);
+            let reg_name = register_name(modrm.rm);
             let value = self.sign_code8(0);
             println!("add {},{}", reg_name, value);
             self.epi_inc();
@@ -299,7 +299,7 @@ impl Emulator {
     }
 
     fn sub_rm32_imm32(&mut self, modrm: ModRM) {
-        let reg_name = self.register_name(modrm.rm);
+        let reg_name = register_name(modrm.rm);
         let value = self.code32(0);
         println!("sub {},{}", reg_name, value);
         self.epi_add4();
@@ -315,7 +315,7 @@ impl Emulator {
             let temp = self.memory_u32(address) as i32;
             self.memory_set32(address, (temp - value) as u32);
         } else if modrm.mode == 0b11 {
-            let reg_name = self.register_name(modrm.rm);
+            let reg_name = register_name(modrm.rm);
             let value = self.sign_code8(0);
             println!("sub {},{}", reg_name, value);
             self.epi_inc();
@@ -413,7 +413,7 @@ impl Emulator {
 
     fn cmp_r32_rm32(&mut self) {
         let (reg, address) = self.read_effective_address();
-        let reg_name = self.register_name(reg);
+        let reg_name = register_name(reg);
         println!("cmp {},[{:08X}]", reg_name, address);
         let unsign_register = self.register[reg as usize] as u32;
         let sign_register = self.register[reg as usize] as i32;
@@ -465,7 +465,7 @@ impl Emulator {
             unsign_register = self.memory_u32(address) as u32;
             sign_register = self.memory_u32(address) as i32;
         } else if modrm.mode == 0b11 {
-            let reg_name = self.register_name(modrm.rm);
+            let reg_name = register_name(modrm.rm);
             print!("cmp {},", reg_name);
             unsign_register = self.register[modrm.rm as usize] as u32;
             sign_register = self.register[modrm.rm as usize] as i32;
@@ -513,14 +513,14 @@ impl Emulator {
 
     fn lea(&mut self) {
         let (reg, address) = self.read_effective_address();
-        let reg_name = self.register_name(reg);
+        let reg_name = register_name(reg);
         println!("lea {},[{:08X}]", reg_name, address);
         self.register[reg as usize] = address;
     }
 
     fn and_rm32_imm8(&mut self, modrm: ModRM) {
         if modrm.mode == 0b11 {
-            let reg_name = self.register_name(modrm.rm);
+            let reg_name = register_name(modrm.rm);
             let value = self.sign_code8(0);
             println!("and {},{}", reg_name, value);
             self.epi_inc();
@@ -546,8 +546,8 @@ impl Emulator {
     fn add_rm32_r32(&mut self) {
         let modrm = self.read_modrm();
         if modrm.mode == 0b11 {
-            let reg_name1 = self.register_name(modrm.rm);
-            let reg_name2 = self.register_name(modrm.reg);
+            let reg_name1 = register_name(modrm.rm);
+            let reg_name2 = register_name(modrm.reg);
             println!("add {},{}", reg_name1, reg_name2);
             self.register[modrm.rm as usize] += self.register[modrm.reg as usize]
         } else {
@@ -576,7 +576,7 @@ impl Emulator {
         let modrm = self.read_modrm();
         if modrm.mode == 0b01 {
             let (reg, address) = self.read_effective_address_from_modrm(modrm);
-            let reg_name = self.register_name(reg);
+            let reg_name = register_name(reg);
             println!("mov {},[{:#X}]",reg_name,  address);
             let value = self.memory_u32(address);
             println!("value: {}",value);
@@ -588,7 +588,7 @@ impl Emulator {
 
     fn mov_r32_imm32(&mut self, code: u32) {
         let reg = code - 0xb8;
-        let reg_name = self.register_name(reg);
+        let reg_name = register_name(reg);
         let value = self.code32(0);
         println!("mov {},{:#X}",reg_name,  value);
         self.register[reg as usize] = value;
@@ -616,8 +616,8 @@ impl Emulator {
             print!("mov [{:08X}]", address);
             self.memory_set32(address, value);
         } else if modrm.mode == 0b11 {
-            let reg_name1 = self.register_name(modrm.reg);
-            let reg_name2 = self.register_name(modrm.rm);
+            let reg_name1 = register_name(modrm.reg);
+            let reg_name2 = register_name(modrm.rm);
             println!("mov {},{}", reg_name2, reg_name1);
             self.register[modrm.rm as usize] = self.register(modrm.reg);
         } else {
@@ -729,7 +729,7 @@ impl Emulator {
 
     pub fn dump_register(&self) {
         for i in 0..self.register.len() {
-            let reg_name = self.register_name(i as u32);
+            let reg_name = register_name(i as u32);
             let value = self.register[i];
             println!("{} = {:#010X} {}", reg_name, value, value);
         }
