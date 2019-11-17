@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct ModRM {
     pub mode: u32,
     pub reg: u32,
@@ -31,6 +32,7 @@ impl ModRM {
         // println!("Mod: {:02b}, REG: {:03b} (opcode: {}, {}), R/M: {:03b} ({})",
         //          modrm.mode, modrm.reg, modrm.opcode, reg_name1,
         //          modrm.rm, reg_name2);
+        println!("ModR/M: {:?}", modrm);
         println!("Mod: {:02b}, REG: {:03b} (opcode: {}), R/M: {:03b}",
                  modrm.mode, modrm.reg, modrm.opcode, modrm.rm);
 
