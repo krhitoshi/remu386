@@ -239,7 +239,7 @@ impl Emulator {
             println!("push: {:08X}", value);
             self.push32(value);
         } else {
-            unimplemented!();
+            unimplemented!("unknown Mod");
         }
     }
 
@@ -467,7 +467,7 @@ impl Emulator {
             unsign_register = self.register[modrm.rm as usize] as u32;
             sign_register = self.register[modrm.rm as usize] as i32;
         } else {
-            unimplemented!();
+            unimplemented!("unknown Mod");
         }
         let value = self.code8(0) as u32;
         let sign_value = self.sign_code8(0) as i32;
@@ -524,7 +524,7 @@ impl Emulator {
             let temp = self.register(modrm.rm) as i32;
             self.register[modrm.rm as usize] = (temp & value) as u32;
         } else {
-            unimplemented!();
+            unimplemented!("unknown Mod");
         }
     }
 
@@ -548,7 +548,7 @@ impl Emulator {
             println!("add {},{}", reg_name1, reg_name2);
             self.register[modrm.rm as usize] += self.register[modrm.reg as usize]
         } else {
-            unimplemented!();
+            unimplemented!("unknown Mod");
         }
     }
 
@@ -565,7 +565,7 @@ impl Emulator {
             let (reg, address) = self.read_effective_address_from_modrm(modrm);
             self.register[reg as usize] -= self.memory_u32(address);
         } else {
-            unimplemented!();
+            unimplemented!("unknown Mod");
         }
     }
 
@@ -579,7 +579,7 @@ impl Emulator {
             println!("value: {}",value);
             self.register[reg as usize] = value;
         } else {
-            unimplemented!();
+            unimplemented!("unknown Mod");
         }
     }
 
@@ -618,8 +618,7 @@ impl Emulator {
             println!("mov {},{}", reg_name2, reg_name1);
             self.register[modrm.rm as usize] = self.register(modrm.reg);
         } else {
-            println!("unknown Mod");
-            unimplemented!("break");
+            unimplemented!("unknown Mod");
         }
     }
 
