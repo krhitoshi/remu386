@@ -48,6 +48,7 @@ mod tests {
         let modrm = ModRM::new(0x61);
         assert_eq!(modrm.mode, 0b01);
         assert_eq!(modrm.reg, 0b100);
+        assert_eq!(modrm.opcode, 0b100);
         assert_eq!(modrm.rm, 0b001);
     }
 }
