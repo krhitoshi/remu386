@@ -452,6 +452,10 @@ impl Emulator {
         self.cmp_base(target, value, value as i32);
     }
 
+    fn cmp_u32_i32(&mut self, target: u32, sign_value: i32) {
+        self.cmp_base(target, sign_value as u32, sign_value);
+    }
+
     fn cmp_r32_rm32(&mut self) {
         let modrm = self.read_modrm();
         if modrm.mode == 0b01 {
@@ -488,6 +492,7 @@ impl Emulator {
         let sign_value = self.sign_code8(0) as i32;
         self.epi_inc();
         println!("{}", value);
+
         println!("eflags = {:032b}", self.eflags);
 
         let (result, carry_flag) = unsign_register.overflowing_sub(value);
