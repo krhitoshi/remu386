@@ -822,4 +822,44 @@ mod tests {
         assert_eq!(emu.is_carry(), false);
         assert_eq!(emu.is_overflow(), true);
     }
+
+    #[test]
+    fn eflags_carry() {
+        let mut emu = Emulator::new(TEST_MEMSIZE);
+        emu.eflags = 1;
+        assert_eq!(emu.is_zero(), false);
+        assert_eq!(emu.is_sign_flag(), false);
+        assert_eq!(emu.is_carry(), true);
+        assert_eq!(emu.is_overflow(), false);
+    }
+
+    #[test]
+    fn eflags_zero() {
+        let mut emu = Emulator::new(TEST_MEMSIZE);
+        emu.eflags = 1 << 6;
+        assert_eq!(emu.is_zero(), true);
+        assert_eq!(emu.is_sign_flag(), false);
+        assert_eq!(emu.is_carry(), false);
+        assert_eq!(emu.is_overflow(), false);
+    }
+
+    #[test]
+    fn eflags_sign() {
+        let mut emu = Emulator::new(TEST_MEMSIZE);
+        emu.eflags = 1 << 7;
+        assert_eq!(emu.is_zero(), false);
+        assert_eq!(emu.is_sign_flag(), true);
+        assert_eq!(emu.is_carry(), false);
+        assert_eq!(emu.is_overflow(), false);
+    }
+
+    #[test]
+    fn eflags_overflow() {
+        let mut emu = Emulator::new(TEST_MEMSIZE);
+        emu.eflags = 1 << 11;
+        assert_eq!(emu.is_zero(), false);
+        assert_eq!(emu.is_sign_flag(), false);
+        assert_eq!(emu.is_carry(), false);
+        assert_eq!(emu.is_overflow(), true);
+    }
 }
