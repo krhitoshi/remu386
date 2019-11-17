@@ -732,3 +732,15 @@ impl Emulator {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::Emulator;
+    use super::MEMORY_SIZE;
+    #[test]
+    fn emulator_new() {
+        let emu = Emulator::new(MEMORY_SIZE);
+        assert_eq!(emu.eip, 0);
+        assert_eq!(emu.eflags, 0);
+    }
+}
