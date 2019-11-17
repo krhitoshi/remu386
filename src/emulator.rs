@@ -255,6 +255,17 @@ impl Emulator {
         self.eip = address as u32;
     }
 
+    fn push_rm32(&mut self, modrm: ModRM) {
+        if modrm.mode == 0b01 {
+            let (_reg, address) = self.read_effective_address_from_modrm(modrm);
+            println!("address: {:08X}", address);
+            let value = self.memory_u32(address);
+            self.push32(value);
+        } else {
+            panic!();
+        }
+    }
+
     fn push_r32(&mut self, code: u32) {
         let reg = code - 0x50;
         let reg_name = self.register_name(reg);
@@ -354,6 +365,15 @@ impl Emulator {
             self.sub_rm32_imm8(modrm);
         } else if modrm.opcode == 7 {
             self.cmp_rm32_imm8(modrm);
+        } else {
+            panic!("unknown sub opcode: {}", modrm.opcode);
+        }
+    }
+
+    fn opcodeff(&mut self) {
+        let modrm = self.read_modrm();
+        if modrm.opcode == 6 {
+            self.push_rm32(modrm);
         } else {
             panic!("unknown sub opcode: {}", modrm.opcode);
         }
@@ -643,6 +663,8 @@ impl Emulator {
                 self.mov_r32_rm32();
             } else if code == 0x8d {
                 self.lea();
+            } else if code == 0xff {
+                self.opcodeff();
             } else if code == 0xc9 {
                 self.leave();
             } else if code == 0xc7 {
