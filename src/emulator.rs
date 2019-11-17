@@ -413,7 +413,8 @@ impl Emulator {
         };
     }
 
-    fn cmp_u32_u32(&mut self, target: u32, value: u32) {
+    fn cmp_base(&mut self, target: u32, value: u32, sign_value: i32) {
+        let sign_target = target as i32;
         let (result, carry_flag) = target.overflowing_sub(value);
         println!("result {}, {:08X}", result, result);
         // CF: Carry Flag
@@ -437,10 +438,6 @@ impl Emulator {
         } else {
             self.eflags &= !(1 << 7);
         }
-
-        let sign_target = target as i32;
-        let sign_value = value as i32;
-
         // OF: Overflow Flag
         if sign_target.checked_sub(sign_value) == None {
             println!("overflow flag");
@@ -449,6 +446,10 @@ impl Emulator {
             self.eflags &= !(1 << 11);
         }
         println!("eflags = {:032b}", self.eflags);
+    }
+
+    fn cmp_u32_u32(&mut self, target: u32, value: u32) {
+        self.cmp_base(target, value, value as i32);
     }
 
     fn cmp_r32_rm32(&mut self) {
