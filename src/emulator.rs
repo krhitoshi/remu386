@@ -473,7 +473,7 @@ impl Emulator {
     }
 
     fn cmp_rm32_imm8(&mut self, modrm: ModRM) {
-        let mut target: u32;
+        let target: u32;
         if modrm.mode == 0b01 {
             let (_reg, address) = self.read_effective_address_from_modrm(modrm);
             print!("cmp [{:08X}],", address);
