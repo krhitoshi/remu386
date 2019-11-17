@@ -574,10 +574,14 @@ impl Emulator {
 
     fn add_rm32_r32(&mut self) {
         let modrm = self.read_modrm();
-        let reg_name1 = self.register_name(modrm.rm);
-        let reg_name2 = self.register_name(modrm.reg);
-        println!("add {},{}", reg_name1, reg_name2);
-        self.register[modrm.rm as usize] += self.register[modrm.reg as usize]
+        if modrm.mode == 0b11 {
+            let reg_name1 = self.register_name(modrm.rm);
+            let reg_name2 = self.register_name(modrm.reg);
+            println!("add {},{}", reg_name1, reg_name2);
+            self.register[modrm.rm as usize] += self.register[modrm.reg as usize]
+        } else {
+            panic!();
+        }
     }
 
     fn sub_eax_imm32(&mut self) {
@@ -588,13 +592,27 @@ impl Emulator {
     }
 
     fn sub_r32_rm32(&mut self) {
-        let (reg, address) = self.read_effective_address();
-        self.register[reg as usize] -= self.memory_u32(address);
+        let modrm = self.read_modrm();
+        if modrm.mode == 0b01 {
+            let (reg, address) = self.read_effective_address_from_modrm(modrm);
+            self.register[reg as usize] -= self.memory_u32(address);
+        } else {
+            panic!();
+        }
     }
 
     fn mov_r32_rm32(&mut self) {
-        let (reg, address) = self.read_effective_address();
-        self.register[reg as usize] = self.memory_u32(address);
+        let modrm = self.read_modrm();
+        if modrm.mode == 0b01 {
+            let (reg, address) = self.read_effective_address_from_modrm(modrm);
+            let reg_name = self.register_name(reg);
+            println!("mov {},[{:#X}]",reg_name,  address);
+            let value = self.memory_u32(address);
+            println!("value: {}",value);
+            self.register[reg as usize] = value;
+        } else {
+            panic!();
+        }
     }
 
     fn mov_r32_imm32(&mut self, code: u32) {
