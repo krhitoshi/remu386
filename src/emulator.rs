@@ -348,6 +348,8 @@ impl Emulator {
         let modrm = self.read_modrm();
         if modrm.opcode == 0 {
             self.add_rm32_imm8(modrm);
+        } else if modrm.opcode == 4 {
+            self.and_rm32_imm8(modrm)
         } else if modrm.opcode == 5 {
             self.sub_rm32_imm8(modrm);
         } else if modrm.opcode == 7 {
@@ -513,6 +515,19 @@ impl Emulator {
         let (reg, address) = self.read_effective_address();
         let reg_name = self.register_name(reg);
         println!("lea {},[{:08X}]", reg_name, address);
+    }
+
+    fn and_rm32_imm8(&mut self, modrm: ModRM) {
+        if modrm.mode == 0b11 {
+            let reg_name = self.register_name(modrm.rm);
+            let value = self.sign_code8(0);
+            println!("and {},{}", reg_name, value);
+            self.epi_inc();
+            let temp = self.register(modrm.rm) as i32;
+            self.register[modrm.rm as usize] = (temp & value) as u32;
+        } else {
+            panic!();
+        }
     }
 
     fn add_eax_imm32(&mut self) {
