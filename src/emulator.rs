@@ -357,6 +357,10 @@ impl Emulator {
         }
     }
 
+    fn is_carry(&self) -> bool {
+        return (self.eflags & 1) == 1;
+    }
+
     fn is_zero(&self) -> bool {
         return (self.eflags & 1 << 6) == 1 << 6;
     }
@@ -407,6 +411,44 @@ impl Emulator {
         if self.is_zero() || (self.is_sign_flag() != self.is_overflow()) {
             self.jump(value);
         };
+    }
+
+    fn cmp_u32_u32(&mut self, target: u32, value: u32) {
+        let (result, carry_flag) = target.overflowing_sub(value);
+        println!("result {}, {:08X}", result, result);
+        // CF: Carry Flag
+        if carry_flag {
+            println!("carry flag");
+            self.eflags |= 1;
+        } else {
+            self.eflags &= !1;
+        }
+        // ZF: Zero Flag
+        if result == 0 {
+            println!("zero flag");
+            self.eflags |= 1 << 6;
+        } else {
+            self.eflags &= !(1 << 6);
+        }
+        // SF: Sign Flag
+        if (result >> 31) == 1 {
+            println!("sign flag");
+            self.eflags |= 1 << 7;
+        } else {
+            self.eflags &= !(1 << 7);
+        }
+
+        let sign_target = target as i32;
+        let sign_value = value as i32;
+
+        // OF: Overflow Flag
+        if sign_target.checked_sub(sign_value) == None {
+            println!("overflow flag");
+            self.eflags |= 1 << 11;
+        } else {
+            self.eflags &= !(1 << 11);
+        }
+        println!("eflags = {:032b}", self.eflags);
     }
 
     fn cmp_r32_rm32(&mut self) {
@@ -735,12 +777,29 @@ impl Emulator {
 
 #[cfg(test)]
 mod tests {
+    const TEST_MEMSIZE: u32 = 1024;
     use super::Emulator;
-    use super::MEMORY_SIZE;
+
     #[test]
     fn emulator_new() {
-        let emu = Emulator::new(MEMORY_SIZE);
+        let mut emu = Emulator::new(TEST_MEMSIZE);
         assert_eq!(emu.eip, 0);
         assert_eq!(emu.eflags, 0);
+
+        emu.cmp_u32_u32(0xffff, 0xffff);
+        assert_eq!(emu.is_zero(), true);
+        assert_eq!(emu.is_sign_flag(), false);
+        assert_eq!(emu.is_carry(), false);
+        assert_eq!(emu.is_overflow(), false);
+    }
+
+    #[test]
+    fn cmp_zero() {
+        let mut emu = Emulator::new(TEST_MEMSIZE);
+        emu.cmp_u32_u32(0xffff, 0xffff);
+        assert_eq!(emu.is_zero(), true);
+        assert_eq!(emu.is_sign_flag(), false);
+        assert_eq!(emu.is_carry(), false);
+        assert_eq!(emu.is_overflow(), false);
     }
 }
