@@ -812,4 +812,14 @@ mod tests {
         assert_eq!(emu.is_carry(), true);
         assert_eq!(emu.is_overflow(), false);
     }
+
+    #[test]
+    fn cmp_overflow() {
+        let mut emu = Emulator::new(TEST_MEMSIZE);
+        emu.cmp_u32_u32(0x80000000, 1);
+        assert_eq!(emu.is_zero(), false);
+        assert_eq!(emu.is_sign_flag(), false);
+        assert_eq!(emu.is_carry(), false);
+        assert_eq!(emu.is_overflow(), true);
+    }
 }
