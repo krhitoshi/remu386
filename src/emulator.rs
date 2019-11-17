@@ -762,8 +762,22 @@ mod tests {
         let mut emu = Emulator::new(TEST_MEMSIZE);
         assert_eq!(emu.eip, 0);
         assert_eq!(emu.eflags, 0);
+    }
 
+    #[test]
+    fn cmp_u32_u32() {
+        let mut emu = Emulator::new(TEST_MEMSIZE);
         emu.cmp_u32_u32(0xffff, 0xffff);
+        assert_eq!(emu.is_zero(), true);
+        assert_eq!(emu.is_sign_flag(), false);
+        assert_eq!(emu.is_carry(), false);
+        assert_eq!(emu.is_overflow(), false);
+    }
+
+    #[test]
+    fn cmp_u32_i32() {
+        let mut emu = Emulator::new(TEST_MEMSIZE);
+        emu.cmp_u32_i32(0xffffffff, -1);
         assert_eq!(emu.is_zero(), true);
         assert_eq!(emu.is_sign_flag(), false);
         assert_eq!(emu.is_carry(), false);
