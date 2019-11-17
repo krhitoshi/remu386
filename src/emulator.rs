@@ -174,8 +174,12 @@ impl Emulator {
         let rm_mask = 0b00000111;
         modrm.rm = code & rm_mask;
 
-        println!("Mod: {:02b}, REG: {:03b} (opcode: {}), R/M: {:03b}",
-                 modrm.mode, modrm.reg, modrm.opcode, modrm.rm);
+        let reg_name1 = self.register_name(modrm.reg);
+        let reg_name2 = self.register_name(modrm.rm);
+
+        println!("Mod: {:02b}, REG: {:03b} (opcode: {}, {}), R/M: {:03b} ({})",
+                 modrm.mode, modrm.reg, modrm.opcode, reg_name1,
+                 modrm.rm, reg_name2);
         return modrm;
     }
 
@@ -568,6 +572,14 @@ impl Emulator {
         self.register[reg as usize] += self.memory_u32(address);
     }
 
+    fn add_rm32_r32(&mut self) {
+        let modrm = self.read_modrm();
+        let reg_name1 = self.register_name(modrm.rm);
+        let reg_name2 = self.register_name(modrm.reg);
+        println!("add {},{}", reg_name1, reg_name2);
+        self.register[modrm.rm as usize] += self.register[modrm.reg as usize]
+    }
+
     fn sub_eax_imm32(&mut self) {
         let value = self.code32(0);
         println!("sub EAX,{:08X}", value);
@@ -638,7 +650,9 @@ impl Emulator {
             let code = self.code8(0);
             self.epi_inc();
             println!("opcode: {:02X}", code);
-            if code == 0x03 {
+            if code == 0x01 {
+                self.add_rm32_r32();
+            } else if code == 0x03 {
                 self.add_r32_rm32();
             } else if code == 0x05 {
                 self.add_eax_imm32();
