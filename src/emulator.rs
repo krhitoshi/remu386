@@ -22,6 +22,12 @@ struct ModRM {
     opcode: u32
 }
 
+struct SIB {
+    scale: u32,
+    index: u32,
+    base: u32
+}
+
 static REGISTER_NAME: [&str; 8] =
  ["EAX", "ECX", "EDX", "EBX", "ESP", "EBP", "ESI", "EDI"];
 
@@ -144,7 +150,7 @@ impl Emulator {
     fn read_modrm(&mut self) -> ModRM {
         let code = self.code8(0);
         self.epi_inc();
-        println!("ModR/M: {:X} {:#8b}", code, code);
+        println!("ModR/M: {:02X} {:#8b}", code, code);
 
         let mut modrm = ModRM {
             mode: 0,
@@ -168,6 +174,31 @@ impl Emulator {
         return modrm;
     }
 
+    fn read_sib(&mut self) -> SIB {
+        let code = self.code8(0);
+        self.epi_inc();
+        println!("SIB: {:02X} {:#8b}", code, code);
+
+        let mut sib = SIB {
+            scale: 0,
+            index: 0,
+            base: 0
+        };
+
+        let mod_mask = 0b11000000;
+        sib.scale = (code & mod_mask) >> 6;
+
+        let reg_mask = 0b00111000;
+        sib.index = (code & reg_mask) >> 3;
+
+        let rm_mask = 0b00000111;
+        sib.base = code & rm_mask;
+
+        println!("scale: {:02b}, index: {:03b}, base {:03b}",
+                sib.scale, sib.index, sib.base);
+        return sib;
+    }
+
     fn read_effective_address(&mut self) -> (u32, u32) {
         let modrm = self.read_modrm();
         return self.read_effective_address_from_modrm(modrm);
@@ -176,15 +207,27 @@ impl Emulator {
     fn read_effective_address_from_modrm(&mut self, modrm: ModRM) -> (u32, u32) {
         if modrm.mode == 0b01 {
             if modrm.rm == 0b100 {
-                panic!("not implemented ModR/M rm: 100");
+                let sib = self.read_sib();
+                let disp = self.sign_code8(0);
+                self.epi_inc();
+                if sib.scale == 0 && sib.index == 0b100 {
+                    let reg_name2 = self.register_name(sib.base);
+                    println!("address: [{} {}]", reg_name2, disp);
+                    let temp = self.register(sib.base) as i32;
+                    let address = (temp + disp) as u32;
+                    return (modrm.reg, address);
+                } else {
+                    panic!("not implemented ModR/M rm: 100");
+                }
+            } else {
+                let disp = self.sign_code8(0);
+                self.epi_inc();
+                let reg_name2 = self.register_name(modrm.rm);
+                println!("rm: {},", reg_name2);
+                let temp = self.register(modrm.rm) as i32;
+                let address = (temp + disp) as u32;
+                return (modrm.reg, address);
             }
-            let disp = self.sign_code8(0);
-            self.epi_inc();
-            let reg_name2 = self.register_name(modrm.rm);
-            println!("rm: {},", reg_name2);
-            let temp = self.register(modrm.rm) as i32;
-            let address = (temp + disp) as u32;
-            return (modrm.reg, address);
         } else {
             panic!("unknown Mod: {:02b}", modrm.mode);
         }
@@ -466,6 +509,12 @@ impl Emulator {
         println!("eflags = {:032b}", self.eflags);
     }
 
+    fn lea(&mut self) {
+        let (reg, address) = self.read_effective_address();
+        let reg_name = self.register_name(reg);
+        println!("lea {},[{:08X}]", reg_name, address);
+    }
+
     fn add_eax_imm32(&mut self) {
         let value = self.code32(0);
         println!("add EAX,{:08X}", value);
@@ -576,6 +625,8 @@ impl Emulator {
                 self.mov_rm32_r32();
             } else if code == 0x8b {
                 self.mov_r32_rm32();
+            } else if code == 0x8d {
+                self.lea();
             } else if code == 0xc9 {
                 self.leave();
             } else if code == 0xc7 {
