@@ -366,6 +366,51 @@ impl Emulator {
         };
     }
 
+    fn cmp_r32_rm32(&mut self) {
+        let (reg, address) = self.read_effective_address();
+        let reg_name = self.register_name(reg);
+        println!("cmp {},[{:08X}]", reg_name, address);
+        let unsign_register = self.register[reg as usize] as u32;
+        let sign_register = self.register[reg as usize] as i32;
+        let value = self.memory_u32(address) as u32;
+        let sign_value = self.memory_u32(address) as i32;
+        println!("cmp {},{}", reg_name, value);
+        println!("value: {}", value);
+        println!("eflags = {:032b}", self.eflags);
+
+        let (result, carry_flag) = unsign_register.overflowing_sub(value);
+        println!("result {}, {:08X}", result, result);
+        // CF: Carry Flag
+        if carry_flag {
+            println!("carry flag");
+            self.eflags |= 1;
+        } else {
+            self.eflags &= !1;
+        }
+        // ZF: Zero Flag
+        if result == 0 {
+            println!("zero flag");
+            self.eflags |= 1 << 6;
+        } else {
+            self.eflags &= !(1 << 6);
+        }
+        // SF: Sign Flag
+        if (result >> 31) == 1 {
+            println!("sign flag");
+            self.eflags |= 1 << 7;
+        } else {
+            self.eflags &= !(1 << 7);
+        }
+        // OF: Overflow Flag
+        if sign_register.checked_sub(sign_value) == None {
+            println!("overflow flag");
+            self.eflags |= 1 << 11;
+        } else {
+            self.eflags &= !(1 << 11);
+        }
+        println!("eflags = {:032b}", self.eflags);
+    }
+
     fn cmp_rm32_imm8(&mut self, modrm: ModRM) {
         let mut unsign_register: u32 = 0;
         let mut sign_register: i32 = 0;
@@ -505,8 +550,10 @@ impl Emulator {
                 self.add_eax_imm32();
             } else if code == 0x2b {
                 self.sub_r32_rm32();
-             } else if code == 0x2d {
+            } else if code == 0x2d {
                 self.sub_eax_imm32();
+            } else if code == 0x3b {
+                self.cmp_r32_rm32();
             } else if (0x50 <= code) && (code <= (0x50 + 7)) {
                 self.push_r32(code);
             } else if (0x58 <= code) && (code <= (0x58 + 7)) {
