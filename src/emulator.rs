@@ -226,7 +226,7 @@ impl Emulator {
                     let address = (temp + disp) as u32;
                     return (modrm.reg, address);
                 } else {
-                    panic!("not implemented ModR/M rm: 100");
+                    unimplemented!("not implemented ModR/M rm: 100");
                 }
             } else {
                 let disp = self.sign_code8(0);
@@ -238,7 +238,7 @@ impl Emulator {
                 return (modrm.reg, address);
             }
         } else {
-            panic!("unknown Mod: {:02b}", modrm.mode);
+            unimplemented!("unknown Mod: {:02b}", modrm.mode);
         }
     }
 
@@ -272,7 +272,7 @@ impl Emulator {
             println!("push: {:08X}", value);
             self.push32(value);
         } else {
-            panic!();
+            unimplemented!();
         }
     }
 
@@ -324,7 +324,7 @@ impl Emulator {
             let temp = self.register(modrm.rm) as i32;
             self.register[modrm.rm as usize] = (temp + value) as u32;
         } else {
-            panic!();
+            unimplemented!();
         }
     }
 
@@ -361,7 +361,7 @@ impl Emulator {
         } else if modrm.opcode == 5 {
             self.sub_rm32_imm32(modrm);
         } else {
-            panic!("unknown opcode: {}", modrm.opcode);
+            unimplemented!("unknown opcode: {}", modrm.opcode);
         }
     }
 
@@ -376,7 +376,7 @@ impl Emulator {
         } else if modrm.opcode == 7 {
             self.cmp_rm32_imm8(modrm);
         } else {
-            panic!("unknown sub opcode: {}", modrm.opcode);
+            unimplemented!("unknown sub opcode: {}", modrm.opcode);
         }
     }
 
@@ -385,7 +385,7 @@ impl Emulator {
         if modrm.opcode == 6 {
             self.push_rm32(modrm);
         } else {
-            panic!("unknown sub opcode: {}", modrm.opcode);
+            unimplemented!("unknown sub opcode: {}", modrm.opcode);
         }
     }
 
@@ -500,7 +500,7 @@ impl Emulator {
             unsign_register = self.register[modrm.rm as usize] as u32;
             sign_register = self.register[modrm.rm as usize] as i32;
         } else {
-            panic!();
+            unimplemented!();
         }
         let value = self.code8(0) as u32;
         let sign_value = self.sign_code8(0) as i32;
@@ -557,7 +557,7 @@ impl Emulator {
             let temp = self.register(modrm.rm) as i32;
             self.register[modrm.rm as usize] = (temp & value) as u32;
         } else {
-            panic!();
+            unimplemented!();
         }
     }
 
@@ -581,7 +581,7 @@ impl Emulator {
             println!("add {},{}", reg_name1, reg_name2);
             self.register[modrm.rm as usize] += self.register[modrm.reg as usize]
         } else {
-            panic!();
+            unimplemented!();
         }
     }
 
@@ -598,7 +598,7 @@ impl Emulator {
             let (reg, address) = self.read_effective_address_from_modrm(modrm);
             self.register[reg as usize] -= self.memory_u32(address);
         } else {
-            panic!();
+            unimplemented!();
         }
     }
 
@@ -612,7 +612,7 @@ impl Emulator {
             println!("value: {}",value);
             self.register[reg as usize] = value;
         } else {
-            panic!();
+            unimplemented!();
         }
     }
 
@@ -633,7 +633,7 @@ impl Emulator {
             self.epi_add4();
             self.memory_set32(address, value);
         } else {
-            panic!("unknown opcode: {}", opcode);
+            unimplemented!("unknown opcode: {}", opcode);
         }
     }
 
@@ -652,7 +652,7 @@ impl Emulator {
             self.register[modrm.rm as usize] = self.register(modrm.reg);
         } else {
             println!("unknown Mod");
-            panic!("break");
+            unimplemented!("break");
         }
     }
 
@@ -728,9 +728,9 @@ impl Emulator {
                     self.eip = address;
                 }
             } else {
-                panic!("unknown code: {:02X}", code);
+                unimplemented!("unknown code: {:02X}", code);
             }
-            self.dump_register();
+            // self.dump_register();
             println!("---");
         }
     }
