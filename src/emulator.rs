@@ -364,6 +364,19 @@ impl Emulator {
         }
     }
 
+    fn opcode0f(&mut self) {
+        let code = self.code8(0);
+        self.epi_inc();
+        if DEBUG {
+            println!("opcode: {:02X}", code);
+        }
+        if code == 0x84 {
+            self.jz_rel32();
+        } else {
+            unimplemented!();
+        }
+    }
+
     fn opcode81(&mut self) {
         let modrm = self.read_modrm();
         if modrm.opcode == 0 {
@@ -418,6 +431,18 @@ impl Emulator {
     fn jz_rel8(&mut self) {
         let value = self.sign_code8(0);
         self.epi_inc();
+        if DEBUG {
+            println!("jz {:08X}", value);
+            println!("eflags = {:032b}", self.eflags);
+        }
+        if self.is_zero() {
+            self.jump(value);
+        };
+    }
+
+    fn jz_rel32(&mut self) {
+        let value = self.sign_code32(0);
+        self.epi_add4();
         if DEBUG {
             println!("jz {:08X}", value);
             println!("eflags = {:032b}", self.eflags);
@@ -742,6 +767,8 @@ impl Emulator {
                 self.add_r32_rm32();
             } else if code == 0x05 {
                 self.add_eax_imm32();
+            } else if code == 0x0f {
+                self.opcode0f();
             } else if code == 0x2b {
                 self.sub_r32_rm32();
             } else if code == 0x2d {
