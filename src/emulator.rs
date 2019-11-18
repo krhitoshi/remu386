@@ -2,7 +2,7 @@ mod modrm;
 use modrm::ModRM;
 use Register::*;
 
-pub const DEBUG: bool = false;
+pub const DEBUG: bool = true;
 
 // 1MB 0x00000 - 0xfffff
 pub const MEMORY_SIZE: u32 = 1024 * 1024;
@@ -572,6 +572,20 @@ impl Emulator {
         self.register[reg as usize] = address;
     }
 
+    fn xor_rm32_r32(&mut self) {
+        let modrm = self.read_modrm();
+        if modrm.mode == 0b11 {
+            if DEBUG {
+                let reg_name1 = register_name(modrm.rm);
+                let reg_name2 = register_name(modrm.reg);
+                println!("xor {},{}", reg_name1, reg_name2);
+            }
+            self.register[modrm.rm as usize] ^= self.register[modrm.reg as usize];
+        } else {
+            unimplemented!("unknown Mod");
+        }
+    }
+
     fn and_rm32_imm8(&mut self, modrm: ModRM) {
         if modrm.mode == 0b11 {
             let reg_name = register_name(modrm.rm);
@@ -732,6 +746,8 @@ impl Emulator {
                 self.sub_r32_rm32();
             } else if code == 0x2d {
                 self.sub_eax_imm32();
+            } else if code == 0x31 {
+                self.xor_rm32_r32();
             } else if code == 0x3b {
                 self.cmp_r32_rm32();
             } else if (0x50 <= code) && (code <= (0x50 + 7)) {
