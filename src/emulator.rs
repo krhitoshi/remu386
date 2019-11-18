@@ -220,6 +220,25 @@ impl Emulator {
                 let address = (temp + disp) as u32;
                 return (modrm.reg, address);
             }
+        } else if modrm.mode == 0b10 {
+            if modrm.rm == 0b100 {
+                let sib = self.read_sib();
+                let disp = self.sign_code32(0);
+                self.epi_add4();
+                if sib.scale == 0 && sib.index == 0b100 {
+                    if DEBUG {
+                        let reg_name2 = register_name(sib.base);
+                        println!("address: [{} {}]", reg_name2, disp);
+                    }
+                    let temp = self.register(sib.base) as i32;
+                    let address = (temp + disp) as u32;
+                    return (modrm.reg, address);
+                } else {
+                    unimplemented!("");
+                }
+            } else {
+                unimplemented!("");
+            }
         } else {
             unimplemented!("unknown Mod: {:02b}", modrm.mode);
         }
@@ -603,12 +622,17 @@ impl Emulator {
     }
 
     fn lea(&mut self) {
-        let (reg, address) = self.read_effective_address();
-        let reg_name = register_name(reg);
-        if DEBUG {
-            println!("lea {},[{:08X}]", reg_name, address);
+        let modrm = self.read_modrm();
+        if modrm.mode == 0b01 ||  modrm.mode == 0b10 {
+            let (reg, address) = self.read_effective_address_from_modrm(&modrm);
+            let reg_name = register_name(reg);
+            if DEBUG {
+                println!("lea {},[{:08X}]", reg_name, address);
+            }
+            self.register[reg as usize] = address;
+        } else {
+            unimplemented!("unknown Mod");
         }
-        self.register[reg as usize] = address;
     }
 
     fn xor_rm32_r32(&mut self) {
