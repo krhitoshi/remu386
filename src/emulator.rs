@@ -203,9 +203,9 @@ impl Emulator {
                 let disp = self.sign_code8(0);
                 self.epi_inc();
                 if sib.scale == 0 && sib.index == 0b100 {
-                    let reg_name2 = register_name(sib.base);
                     if DEBUG {
-                        println!("address: [{} {}]", reg_name2, disp);
+                        let reg_name = register_name(sib.base);
+                        println!("address: [{} {}]", reg_name, disp);
                     }
                     let temp = self.register(sib.base) as i32;
                     let address = (temp + disp) as u32;
@@ -216,6 +216,10 @@ impl Emulator {
             } else {
                 let disp = self.sign_code8(0);
                 self.epi_inc();
+                if DEBUG {
+                    let reg_name = register_name(modrm.rm);
+                    println!("address: [{} {}]", reg_name, disp);
+                }
                 let temp = self.register(modrm.rm) as i32;
                 let address = (temp + disp) as u32;
                 return (modrm.reg, address);
@@ -267,6 +271,18 @@ impl Emulator {
             println!("jmp short, {:08X}, {}", value, value);
         }
         self.jump(value + 1);
+    }
+
+    fn shr_rm32(&mut self, modrm: ModRM) {
+        if modrm.mode == 0b11 {
+            if DEBUG {
+                let reg_name = register_name(modrm.reg);
+                println!("shr: {},{}", reg_name, 1);
+            }
+            self.register[modrm.reg as usize] = self.register[modrm.reg as usize] >> 1;
+        } else {
+            unimplemented!();
+        }
     }
 
     fn push_rm32(&mut self, modrm: ModRM) {
@@ -432,6 +448,16 @@ impl Emulator {
             unimplemented!("unknown sub opcode: {}", modrm.opcode);
         }
     }
+
+    fn opcoded1(&mut self) {
+        let modrm = self.read_modrm();
+        if modrm.opcode == 5 {
+            self.shr_rm32(modrm);
+        } else {
+            unimplemented!("unknown sub opcode: {}", modrm.opcode);
+        }
+    }
+
 
     fn is_carry(&self) -> bool {
         return (self.eflags & 1) == 1;
@@ -847,6 +873,8 @@ impl Emulator {
                 self.mov_r32_rm32();
             } else if code == 0x8d {
                 self.lea();
+            } else if code == 0xd1 {
+                self.opcoded1();
             } else if code == 0xff {
                 self.opcodeff();
             } else if code == 0xc9 {
