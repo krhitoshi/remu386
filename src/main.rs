@@ -26,8 +26,13 @@ fn main() {
     };
     println!("loaded memory size: {} B", size);
 
-    // emu.load_memory(&mut f);
-    emu.launch();
+    let status= match emu.launch() {
+        Ok(_) => 0,
+        Err(err) => {
+            eprintln!("error: {:?}", err);
+            1
+        }
+    };
     emu.dump_register();
     emu.dump_memory();
 }

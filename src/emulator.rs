@@ -614,7 +614,7 @@ impl Emulator {
         self.jump(4 + value);
     }
 
-    pub fn launch(&mut self) {
+    pub fn launch(&mut self) -> Result<(), ()> {
         loop {
             println!("EIP: {:08X}", self.eip);
             let code = self.code8(0);
@@ -674,7 +674,7 @@ impl Emulator {
                 println!("ret => address: {:08X}", address);
                 if address == 0 {
                     println!("--- EXIT ---");
-                    break;
+                    return Ok(());
                 } else {
                     self.eip = address;
                 }
@@ -684,6 +684,7 @@ impl Emulator {
             // self.dump_register();
             println!("---");
         }
+        panic!("main loop ends without ret");
     }
 
     pub fn dump_memory(&self) {
