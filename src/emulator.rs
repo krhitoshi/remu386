@@ -183,10 +183,10 @@ impl Emulator {
 
     fn read_effective_address(&mut self) -> (u32, u32) {
         let modrm = self.read_modrm();
-        return self.read_effective_address_from_modrm(modrm);
+        return self.read_effective_address_from_modrm(&modrm);
     }
 
-    fn read_effective_address_from_modrm(&mut self, modrm: ModRM) -> (u32, u32) {
+    fn read_effective_address_from_modrm(&mut self, modrm: &ModRM) -> (u32, u32) {
         if modrm.mode == 0b01 {
             if modrm.rm == 0b100 {
                 let sib = self.read_sib();
@@ -234,7 +234,7 @@ impl Emulator {
 
     fn push_rm32(&mut self, modrm: ModRM) {
         if modrm.mode == 0b01 {
-            let (_reg, address) = self.read_effective_address_from_modrm(modrm);
+            let (_reg, address) = self.read_effective_address_from_modrm(&modrm);
             println!("push: [{:08X}]", address);
             let value = self.memory_u32(address);
             println!("push: {:08X}", value);
@@ -278,7 +278,7 @@ impl Emulator {
 
     fn add_rm32_imm8(&mut self, modrm: ModRM) {
         if modrm.mode == 0b01 {
-            let (_reg, address) = self.read_effective_address_from_modrm(modrm);
+            let (_reg, address) = self.read_effective_address_from_modrm(&modrm);
             let value = self.sign_code8(0);
             println!("add [{:08X}],{}", address, value);
             self.epi_inc();
@@ -306,7 +306,7 @@ impl Emulator {
 
     fn sub_rm32_imm8(&mut self, modrm: ModRM) {
         if modrm.mode == 0b01 {
-            let (_reg, address) = self.read_effective_address_from_modrm(modrm);
+            let (_reg, address) = self.read_effective_address_from_modrm(&modrm);
             let value = self.sign_code8(0);
             println!("sub [{:08X}],{}", address, value);
             self.epi_inc();
@@ -459,7 +459,7 @@ impl Emulator {
     fn cmp_r32_rm32(&mut self) {
         let modrm = self.read_modrm();
         if modrm.mode == 0b01 {
-            let (reg, address) = self.read_effective_address_from_modrm(modrm);
+            let (reg, address) = self.read_effective_address_from_modrm(&modrm);
             let reg_name = register_name(reg);
             println!("cmp {},[{:08X}]", reg_name, address);
             let target = self.register[reg as usize];
@@ -475,7 +475,7 @@ impl Emulator {
     fn cmp_rm32_imm8(&mut self, modrm: ModRM) {
         let target: u32;
         if modrm.mode == 0b01 {
-            let (_reg, address) = self.read_effective_address_from_modrm(modrm);
+            let (_reg, address) = self.read_effective_address_from_modrm(&modrm);
             print!("cmp [{:08X}],", address);
             target = self.memory_u32(address) as u32;
         } else if modrm.mode == 0b11 {
@@ -545,7 +545,7 @@ impl Emulator {
     fn sub_r32_rm32(&mut self) {
         let modrm = self.read_modrm();
         if modrm.mode == 0b01 {
-            let (reg, address) = self.read_effective_address_from_modrm(modrm);
+            let (reg, address) = self.read_effective_address_from_modrm(&modrm);
             self.register[reg as usize] -= self.memory_u32(address);
         } else {
             unimplemented!("unknown Mod");
@@ -555,7 +555,7 @@ impl Emulator {
     fn mov_r32_rm32(&mut self) {
         let modrm = self.read_modrm();
         if modrm.mode == 0b01 {
-            let (reg, address) = self.read_effective_address_from_modrm(modrm);
+            let (reg, address) = self.read_effective_address_from_modrm(&modrm);
             let reg_name = register_name(reg);
             println!("mov {},[{:#X}]",reg_name,  address);
             let value = self.memory_u32(address);
@@ -592,7 +592,7 @@ impl Emulator {
 
         if modrm.mode == 0b01 {
             let value = self.register(modrm.reg);
-            let (_reg, address) = self.read_effective_address_from_modrm(modrm);
+            let (_reg, address) = self.read_effective_address_from_modrm(&modrm);
             print!("mov [{:08X}]", address);
             self.memory_set32(address, value);
         } else if modrm.mode == 0b11 {
