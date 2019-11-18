@@ -680,10 +680,18 @@ impl Emulator {
 
     fn add_rm32_r32(&mut self) {
         let modrm = self.read_modrm();
-        if modrm.mode == 0b11 {
-            let reg_name1 = register_name(modrm.rm);
-            let reg_name2 = register_name(modrm.reg);
+        if modrm.mode == 0b01 {
+            let (reg, address) = self.read_effective_address_from_modrm(&modrm);
             if DEBUG {
+                let reg_name = register_name(modrm.reg);
+                println!("add {:08X},{}", address, reg_name);
+            }
+            let result = self.memory_u32(address) + self.register[modrm.reg as usize];
+            self.memory_set32(address, result);
+        } else if modrm.mode == 0b11 {
+            if DEBUG {
+                let reg_name1 = register_name(modrm.rm);
+                let reg_name2 = register_name(modrm.reg);
                 println!("add {},{}", reg_name1, reg_name2);
             }
             self.register[modrm.rm as usize] += self.register[modrm.reg as usize]
