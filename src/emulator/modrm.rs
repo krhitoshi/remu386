@@ -1,4 +1,5 @@
 use super::register_name;
+use super::DEBUG;
 
 #[derive(Debug)]
 pub struct ModRM {
@@ -17,7 +18,9 @@ impl ModRM {
             opcode: 0
         };
 
-        println!("ModR/M: {:02X} {:#8b}", code, code);
+        if DEBUG {
+            println!("ModR/M: {:02X} {:#8b}", code, code);
+        }
         let mod_mask = 0b11000000;
         modrm.mode = (code & mod_mask) >> 6;
 
@@ -31,10 +34,12 @@ impl ModRM {
         let reg_name1 = register_name(modrm.reg);
         let reg_name2 = register_name(modrm.rm);
 
-        println!("ModR/M: {:?}", modrm);
-        println!("Mod: {:02b}, REG: {:03b} (opcode: {}, {}), R/M: {:03b} ({})",
-                 modrm.mode, modrm.reg, modrm.opcode, reg_name1,
-                 modrm.rm, reg_name2);
+        if DEBUG {
+            println!("ModR/M: {:?}", modrm);
+            println!("Mod: {:02b}, REG: {:03b} (opcode: {}, {}), R/M: {:03b} ({})",
+                     modrm.mode, modrm.reg, modrm.opcode, reg_name1,
+                     modrm.rm, reg_name2);
+        }
 
         return modrm;
     }
