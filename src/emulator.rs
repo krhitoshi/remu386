@@ -647,6 +647,12 @@ impl Emulator {
         self.cmp_u32_i32(target, sign_value);
     }
 
+    fn nop(&mut self) {
+        if DEBUG {
+            println!("nop");
+        }
+    }
+
     fn lea(&mut self) {
         let modrm = self.read_modrm();
         if modrm.mode == 0b01 ||  modrm.mode == 0b10 {
@@ -889,6 +895,8 @@ impl Emulator {
                 self.mov_r32_rm32();
             } else if code == 0x8d {
                 self.lea();
+            } else if code == 0x90 {
+                self.nop();
             } else if code == 0xd1 {
                 self.opcoded1();
             } else if code == 0xff {
