@@ -38,7 +38,9 @@ impl Emulator {
             register: [0; 8],
             eflags: 0
         };
-        for _i in 0..mem_size {
+
+        // initialize memory
+        for _ in 0..mem_size {
             emu.memory.push(0);
         }
         emu.register[ESP as usize] = mem_size - 4;
