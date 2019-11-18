@@ -735,6 +735,20 @@ impl Emulator {
         self.epi_add4();
     }
 
+    fn sub_rm32_r32(&mut self) {
+        let modrm = self.read_modrm();
+        if modrm.mode == 0b11 {
+            if DEBUG {
+                let reg_name1 = register_name(modrm.rm);
+                let reg_name2 = register_name(modrm.reg);
+                println!("sub {},{}", reg_name1, reg_name2);
+            }
+            self.register[modrm.rm as usize] -= self.register[modrm.reg as usize];
+        } else {
+            unimplemented!("unknown Mod");
+        }
+    }
+
     fn sub_r32_rm32(&mut self) {
         let modrm = self.read_modrm();
         if modrm.mode == 0b01 {
@@ -841,6 +855,8 @@ impl Emulator {
                 self.add_eax_imm32();
             } else if code == 0x0f {
                 self.opcode0f();
+            } else if code == 0x29 {
+                self.sub_rm32_r32();
             } else if code == 0x2b {
                 self.sub_r32_rm32();
             } else if code == 0x2d {
