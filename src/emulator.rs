@@ -372,6 +372,8 @@ impl Emulator {
         }
         if code == 0x84 {
             self.jz_rel32();
+        } else if code == 0x85 {
+            self.jnz_rel32();
         } else {
             unimplemented!();
         }
@@ -455,6 +457,18 @@ impl Emulator {
     fn jnz_rel8(&mut self) {
         let value = self.sign_code8(0);
         self.epi_inc();
+        if DEBUG {
+            println!("jnz {:08X}", value);
+            println!("eflags = {:032b}", self.eflags);
+        }
+        if !self.is_zero() {
+            self.jump(value);
+        };
+    }
+
+    fn jnz_rel32(&mut self) {
+        let value = self.sign_code32(0);
+        self.epi_add4();
         if DEBUG {
             println!("jnz {:08X}", value);
             println!("eflags = {:032b}", self.eflags);
